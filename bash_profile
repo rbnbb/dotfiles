@@ -21,6 +21,7 @@ if [ -d "$HOME/bin" ] ; then
 fi
 
 export TERM=rxvt
+export EDITOR=vim
 
 # >>> juliaup initialize >>>
 
