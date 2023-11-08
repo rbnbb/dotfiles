@@ -18,6 +18,8 @@ call plug#begin()
     Plug 'tpope/vim-commentary'
     Plug 'moll/vim-bbye'
     Plug 'nordtheme/vim'
+    Plug 'nordtheme/vim'
+    Plug 'JuliaEditorSupport/julia-vim'
 call plug#end()
 
 colorscheme nord

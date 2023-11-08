@@ -20,7 +20,7 @@ if [ -d "$HOME/bin" ] ; then
     PATH="$HOME/bin:$PATH"
 fi
 
-export TERM=rxvt
+export TERM=xterm-256color
 export EDITOR=vim
 
 # >>> juliaup initialize >>>
