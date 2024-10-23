@@ -23,18 +23,5 @@ fi
 export TERM=xterm-256color
 export EDITOR=vim
 
-# >>> juliaup initialize >>>
 
-# !! Contents within this block are managed by juliaup !!
-
-case ":$PATH:" in
-    *:/home2020/home/isis/rdaraban/.juliaup/bin:*)
-        ;;
-
-    *)
-        export PATH=/home2020/home/isis/rdaraban/.juliaup/bin${PATH:+:${PATH}}
-        ;;
-esac
-
-# <<< juliaup initialize <<<
 exec ~/bin/zsh
