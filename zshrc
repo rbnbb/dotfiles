@@ -22,9 +22,10 @@ source $ZSH/oh-my-zsh.sh
 export TERM=rxvt
 
 alias sq='squeue -u $USER'
-alias su='sreport cluster AccountUtilizationByUser start=2020-01-01 accounts=g2023a122c -t hours'
+alias su='sreport cluster AccountUtilizationByUser start=2024-07-01 accounts=g2024a275c -t hours'
 alias juliap='julia --project=.'
 alias gup='git stash && git switch main-dev && git pull && git switch hpc-server && git stash pop'
+alias htcup='git stash && git switch main && git pull && git switch hpc && git rebase -X theirs main'
 
 module load julia
 
