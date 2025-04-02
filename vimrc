@@ -33,3 +33,9 @@ call plug#end()
 
 colorscheme nord
 let g:nord_uniform_diff_background=1
+
+" better experience with netrw file explorer
+let g:netrw_browse_split = 4  " Open files in a previous window (reuses last split/tab)
+let g:netrw_altv = 1          " Open vertical splits to the right
+let g:netrw_liststyle = 3     " Tree-style listing (optional, for readability)
+let g:netrw_winsize = 70      " Set `netrw` window width (adjust as needed)
