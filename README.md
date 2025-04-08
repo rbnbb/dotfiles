@@ -7,3 +7,8 @@ When on a new machine with access to internet:
  - install oh-my-zsh and its powerlevel10k theme with the script (to-do)
  - run make.sh to copy the new dotfiles in their place
  - ENJOY !
+
+## Shell utils:
+- fzf
+- autojump-rs
+- thefuck ?
