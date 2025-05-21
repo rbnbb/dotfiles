@@ -6,6 +6,7 @@ nnoremap j gj
 nnoremap k gk
 nnoremap gj j
 nnoremap gk k
+nnoremap ,s :Ex<CR>
 nnoremap <space>j :w<CR>
 nnoremap <space>h :bn<CR>
 nnoremap <space>l :bp<CR>
