@@ -8,7 +8,20 @@ When on a new machine with access to internet:
  - run make.sh to copy the new dotfiles in their place
  - ENJOY !
 
+# tools.list
+
 ## Shell utils:
 - fzf
 - autojump-rs
 - thefuck ?
+
+## Graphs/Trees:
+- Mermaid 🧜
+- Inkscape
+- Keynote
+
+## Slides:
+- beamer -- nah, too static and tiresome, faster to 1st draft with chatGPT, still meh
+- PowerPoint -- never used much, too cluttered menus
+- Keynote -- slick 🫶
+- [presentterm](https://github.com/mfontanini/presenterm) -- WOW
