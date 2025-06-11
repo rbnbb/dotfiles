@@ -23,5 +23,5 @@ When on a new machine with access to internet:
 ## Slides:
 - beamer -- nah, too static and tiresome, faster to 1st draft with chatGPT, still meh
 - PowerPoint -- never used much, too cluttered menus
-- Keynote -- slick 🫶
+- Keynote -- slick 🫶  (use Fira Sans + Fira Math, min 28pt font)
 - [presentterm](https://github.com/mfontanini/presenterm) -- WOW
