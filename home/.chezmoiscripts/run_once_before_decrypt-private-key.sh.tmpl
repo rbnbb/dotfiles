@@ -1,0 +1,35 @@
+#!/bin/bash
+# Decrypt the age identity key
+
+KEY_FILE="${HOME}/.config/chezmoi/key.txt"
+ENCRYPTED_KEY="{{ .chezmoi.sourceDir }}/key.txt.age"
+
+if [ -f "$KEY_FILE" ]; then
+    echo "✓ Age key already exists at $KEY_FILE"
+    exit 0
+fi
+
+echo "Age identity key not found. Decrypting..."
+echo "  Source: $ENCRYPTED_KEY"
+
+if [ ! -f "$ENCRYPTED_KEY" ]; then
+    echo "⚠ Encrypted key not found at $ENCRYPTED_KEY"
+    echo "  You'll need to manually place your key at $KEY_FILE"
+    exit 0
+fi
+
+mkdir -p "${HOME}/.config/chezmoi"
+
+# Try decrypting - if it fails, don't break the whole setup
+if chezmoi age decrypt --output "$KEY_FILE" --passphrase "$ENCRYPTED_KEY"; then
+    chmod 600 "$KEY_FILE"
+    echo "✓ Key decrypted successfully"
+else
+    echo ""
+    echo "⚠ Decryption failed. You can decrypt manually later:"
+    echo "  chezmoi age decrypt --passphrase $ENCRYPTED_KEY > $KEY_FILE"
+    echo ""
+    echo "  Or if you already have the key, copy it to: $KEY_FILE"
+fi
+
+exit 0

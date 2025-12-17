@@ -1,0 +1,13 @@
+snippet print "print" iA
+print(${1:${VISUAL}})
+endsnippet
+
+priority 1
+snippet "" "quotes" i
+"${1:${VISUAL}}"$0
+endsnippet
+
+priority 2
+snippet """ "docstring" bA
+"""${1:${VISUAL}}"""$0
+endsnippet

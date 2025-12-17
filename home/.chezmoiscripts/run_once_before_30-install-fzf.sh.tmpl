@@ -1,0 +1,76 @@
+#!/bin/bash
+# Install fzf (fuzzy finder)
+
+if command -v fzf &> /dev/null; then
+    echo "✓ fzf is already installed"
+    exit 0
+fi
+
+echo "fzf is not installed."
+echo ""
+read -p "Install fzf? [Y/n]: " choice
+choice=${choice:-Y}
+
+if [[ ! "$choice" =~ ^[Yy]$ ]]; then
+    echo "Skipping fzf installation"
+    exit 0
+fi
+
+# Use sudo only if not root and sudo exists
+SUDO=""
+if [ "$(id -u)" -ne 0 ]; then
+    if command -v sudo &> /dev/null; then
+        SUDO="sudo"
+    fi
+fi
+
+install_with_pkg_manager() {
+    if command -v apt-get &> /dev/null; then
+        $SUDO apt-get update && $SUDO apt-get install -y fzf
+    elif command -v dnf &> /dev/null; then
+        $SUDO dnf install -y fzf
+    elif command -v pacman &> /dev/null; then
+        $SUDO pacman -S --noconfirm fzf
+    elif command -v brew &> /dev/null; then
+        brew install fzf
+    else
+        return 1
+    fi
+}
+
+install_from_git() {
+    echo "Installing fzf from git..."
+    if git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf; then
+        ~/.fzf/install --key-bindings --completion --no-update-rc --no-bash --no-fish
+        echo "✓ fzf installed to ~/.fzf"
+    else
+        echo "⚠ Failed to clone fzf"
+        return 1
+    fi
+}
+
+echo ""
+echo "How would you like to install fzf?"
+echo "  1) Use system package manager (requires sudo unless root)"
+echo "  2) Install from git to ~/.fzf (no sudo needed)"
+echo "  3) Skip installation"
+echo ""
+read -p "Choose [1/2/3]: " choice
+
+case "$choice" in
+    1)
+        if install_with_pkg_manager; then
+            echo "✓ fzf installed via package manager"
+        else
+            echo "⚠ Package manager install failed. You can try option 2 or install manually later."
+        fi
+        ;;
+    2)
+        install_from_git || echo "⚠ Git install failed. You can install manually later."
+        ;;
+    3|*)
+        echo "Skipping fzf installation"
+        ;;
+esac
+
+exit 0

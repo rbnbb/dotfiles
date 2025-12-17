@@ -1,0 +1,92 @@
+#!/bin/bash
+# Install zsh if not present
+
+if command -v zsh &> /dev/null; then
+    echo "✓ zsh is already installed"
+    exit 0
+fi
+
+echo "zsh is not installed."
+
+# Use sudo only if not root and sudo exists
+SUDO=""
+if [ "$(id -u)" -ne 0 ]; then
+    if command -v sudo &> /dev/null; then
+        SUDO="sudo"
+    fi
+fi
+
+install_with_pkg_manager() {
+    if command -v apt-get &> /dev/null; then
+        $SUDO apt-get update && $SUDO apt-get install -y zsh
+    elif command -v dnf &> /dev/null; then
+        $SUDO dnf install -y zsh
+    elif command -v pacman &> /dev/null; then
+        $SUDO pacman -S --noconfirm zsh
+    elif command -v brew &> /dev/null; then
+        brew install zsh
+    elif command -v zypper &> /dev/null; then
+        $SUDO zypper install -y zsh
+    else
+        return 1
+    fi
+}
+
+install_from_source() {
+    echo "Installing zsh from source to ~/.local..."
+
+    ZSH_VERSION="5.9"
+    BUILD_DIR=$(mktemp -d)
+    cd "$BUILD_DIR"
+
+    echo "Downloading zsh ${ZSH_VERSION}..."
+    if ! curl -fsSL "https://sourceforge.net/projects/zsh/files/zsh/${ZSH_VERSION}/zsh-${ZSH_VERSION}.tar.xz/download" -o zsh.tar.xz; then
+        echo "Failed to download zsh"
+        return 1
+    fi
+    tar xf zsh.tar.xz
+    cd "zsh-${ZSH_VERSION}"
+
+    echo "Configuring..."
+    ./configure --prefix="$HOME/.local"
+
+    echo "Building..."
+    make -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 2)"
+
+    echo "Installing to ~/.local..."
+    make install
+
+    cd /
+    rm -rf "$BUILD_DIR"
+
+    echo "✓ zsh installed to ~/.local/bin/zsh"
+    echo "  Make sure ~/.local/bin is in your PATH"
+}
+
+echo ""
+echo "How would you like to install zsh?"
+echo "  1) Use system package manager (requires sudo unless root)"
+echo "  2) Build from source to ~/.local (no sudo needed)"
+echo "  3) Skip installation"
+echo ""
+read -p "Choose [1/2/3]: " choice
+
+case "$choice" in
+    1)
+        if install_with_pkg_manager; then
+            echo "✓ zsh installed via package manager"
+        else
+            echo "⚠ Package manager install failed. You can install manually later."
+        fi
+        ;;
+    2)
+        if ! install_from_source; then
+            echo "⚠ Source install failed. You can install manually later."
+        fi
+        ;;
+    3|*)
+        echo "Skipping zsh installation"
+        ;;
+esac
+
+exit 0

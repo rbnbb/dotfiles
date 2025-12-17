@@ -1,0 +1,24 @@
+snippet template ".service template"
+[Unit]
+Description=${1:Description of your application
+Documentation=Optional documentation URL
+After=network.target}
+
+[Service]
+ExecStart=${2:/path/to/your/executable
+WorkingDirectory=/path/to/working/directory
+Environment=KEY=VALUE
+User=your_username
+Group=your_groupname
+LimitNOFILE=4096
+PIDFile=/run/your_application.pid
+ExecReload=/bin/kill -HUP $MAINPID
+RestartSec=5s
+TimeoutStopSec=30s
+TimeoutStartSec=5s
+SyslogIdentifier=your_application}
+Restart=always
+
+[Install]
+WantedBy=default.target
+endsnippet

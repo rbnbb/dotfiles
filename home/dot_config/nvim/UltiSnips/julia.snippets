@@ -1,0 +1,45 @@
+snippet fdoc "julia function with doc" b
+"""
+    $1($2)
+
+$3
+"""
+function ${1:fname}(${2:args})
+    $4
+end$0
+endsnippet
+snippet \in "unicode ∈" i
+∈
+endsnippet
+
+snippet \cdot "unicode ⋅" i
+⋅
+endsnippet
+
+snippet \approx "unicode ≈" i
+≈
+endsnippet
+
+snippet """ "(paranthesis)" iA
+"""${1:${VISUAL}}"""$0
+endsnippet
+
+snippet for "for" bA
+for $1 in $2
+    $3
+end$0
+endsnippet
+
+snippet if "if" bA
+if ${1:condition}
+    ${VISUAL}${2:$3
+else
+    $4}
+end$0
+endsnippet
+
+snippet function "function" bA
+function $1($2)
+    $3
+end$0
+endsnippet

@@ -1,0 +1,20 @@
+#!/bin/bash
+# Get the current file path from sioyek
+CURRENT_FILE="$1"
+
+# Target directory
+PAPERS_DIR="$HOME/physics/papers"
+mkdir -p "$PAPERS_DIR"
+
+# Copy file to papers directory
+FILENAME=$(basename "$CURRENT_FILE")
+NEW_PATH="$PAPERS_DIR/zread-$FILENAME"
+
+cp "$CURRENT_FILE" "$NEW_PATH"
+
+# Open the new file in sioyek at the same location
+{{ if eq .chezmoi.os "darwin" }}
+open -a sioyek "$NEW_PATH"
+{{ else }}
+sioyek "$NEW_PATH"
+{{ end -}}

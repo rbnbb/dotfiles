@@ -1,0 +1,10 @@
+# ~/.bash_profile
+# this file is only read for bash LOGIN shells
+if [ -f "$HOME/.profile" ]; then
+    . "$HOME/.profile"
+fi
+
+# source interactive config
+if [ -f "$HOME/.bashrc" ]; then
+    . "$HOME/.bashrc"
+fi

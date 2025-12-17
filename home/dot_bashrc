@@ -1,0 +1,6 @@
+# execute zsh, if I installed it (4 headless remotes)
+if [ -t 1 ] && [ -d "$HOME/bin" ]; then
+    exec ~/bin/zsh
+fi
+
+[ -f "$HOME/.fzf.bash" ] && source "$HOME/.fzf.bash"

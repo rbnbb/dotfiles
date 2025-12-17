@@ -1,0 +1,64 @@
+nnoremap ; :
+nnoremap : ;
+vnoremap : ;
+vnoremap ; :
+nnoremap <expr> j v:count ? 'j' : 'gj'
+nnoremap <expr> k v:count ? 'k' : 'gk'
+nnoremap gj j
+nnoremap gk k
+nnoremap <silent> ,d :bp <bar> bd #<CR>
+nnoremap <silent> ]b :bn<CR>
+nnoremap <silent> [b :bp<CR>
+nnoremap q: <nop>
+nnoremap <silent> g= :4wincmd + <CR>
+nnoremap <silent> g- :4wincmd - <CR>
+nnoremap <silent> g, :4wincmd > <CR>
+nnoremap <silent> g. :4wincmd < <CR>
+nnoremap <silent> \o :only<CR>
+let mapleader = " "
+nnoremap <silent> <leader><leader> :noh<CR>
+nnoremap <leader>j :w<CR>
+nnoremap <silent> "+y <leader>y
+
+set number
+set relativenumber
+set expandtab
+set tabstop=4
+set shiftwidth=4
+set list
+set listchars=tab:>-,nbsp:+
+set backspace=indent,eol,start
+set incsearch
+set ignorecase
+set smartcase
+set hlsearch
+set noswapfile
+set undodir=~/.vim/undo
+if !isdirectory(expand(&undodir))
+    call mkdir(expand(&undodir), "p", 0700)
+endif
+set undofile
+set laststatus=2
+set statusline=%f
+set statusline+=%m
+if &diff
+    colorscheme desert
+endif
+" better experience with netrw file explorer
+nnoremap ,s :Ex<CR>
+let g:netrw_browse_split = 4  " Open files in a previous window (reuses last split/tab)
+let g:netrw_altv = 1          " Open vertical splits to the right
+let g:netrw_liststyle = 3     " Tree-style listing (optional, for readability)
+let g:netrw_winsize = 70      " Set `netrw` window width (adjust as needed)
+
+call plug#begin()
+    Plug 'tpope/vim-commentary'
+    Plug 'moll/vim-bbye'
+    Plug 'catppuccin/vim', { 'as': 'catppuccin' }
+    Plug 'andymass/vim-matchup'
+    Plug 'JuliaEditorSupport/julia-vim'
+    Plug 'dense-analysis/ale'
+call plug#end()
+
+set termguicolors
+silent! colorscheme catppuccin_frappe

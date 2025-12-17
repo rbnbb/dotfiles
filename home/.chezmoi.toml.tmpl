@@ -1,0 +1,22 @@
+encryption = "age"
+[age]
+    identity = "~/.config/chezmoi/key.txt"
+    recipient = "age1mlgdrz3hha2lw9xjz8mxnj5p0jv7s7x0pfz787sxcwsnhycvwczscgynd3"
+
+{{ $personal := promptBoolOnce . "personal" "Is this machine personal?" -}}
+{{ $headless := promptBoolOnce . "headless" "Is this machine headless (no display)?" -}}
+
+{{- $pager := "less" -}}
+{{- if $personal -}}
+{{- $pager = "delta" -}}
+{{- end -}}
+
+[data]
+    headless = {{ $headless }}
+    personal = {{ $personal }}
+
+[edit]
+    command = "vim"
+
+[diff]
+    pager = {{ $pager | quote }}

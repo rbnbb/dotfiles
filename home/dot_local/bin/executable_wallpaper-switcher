@@ -1,0 +1,260 @@
+#!/usr/bin/env bash
+
+# Wallpaper Switcher Script
+# Usage: 
+#   wallpaper-switch next    - Next wallpaper in current mode
+#   wallpaper-switch prev    - Previous wallpaper in current mode
+#   wallpaper-switch mode    - Toggle between main/xtras
+#   wallpaper-switch random  - Random wallpaper in current mode
+
+set -euo pipefail
+
+# ============ CONFIGURATION ============
+# Set this to your wallpaper base directory
+WALLPAPER_BASE="${WALLPAPER_BASE:-$HOME/wp}"
+STATE_FILE="$HOME/.local/state/wallpaper-switcher/state"
+
+# ============ INITIALIZATION ============
+mkdir -p "$(dirname "$STATE_FILE")"
+
+# Initialize state file if it doesn't exist
+if [[ ! -f "$STATE_FILE" ]]; then
+    echo "mode=main" > "$STATE_FILE"
+    echo "index=0" >> "$STATE_FILE"
+fi
+
+# ============ STATE MANAGEMENT ============
+load_state() {
+    source "$STATE_FILE"
+}
+
+save_state() {
+    local new_mode="$1"
+    local new_index="$2"
+    echo "mode=$new_mode" > "$STATE_FILE"
+    echo "index=$new_index" >> "$STATE_FILE"
+}
+
+# ============ WALLPAPER OPERATIONS ============
+get_wallpaper_list() {
+    local mode="$1"
+    local dir="$WALLPAPER_BASE/$mode"
+    
+    if [[ ! -d "$dir" ]]; then
+        echo "Error: Directory $dir does not exist" >&2
+        exit 1
+    fi
+    
+    # Get sorted list of image files (jpg, jpeg, png, webp)
+    find "$dir" -maxdepth 1 -type f \
+        \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.webp" \) \
+        | sort
+}
+
+set_wallpaper() {
+    local wallpaper_path="$1"
+    
+    if [[ ! -f "$wallpaper_path" ]]; then
+        echo "Error: Wallpaper file not found: $wallpaper_path" >&2
+        exit 1
+    fi
+    
+    # Detect platform and set wallpaper accordingly
+    case "$(uname -s)" in
+        Darwin)
+            # macOS
+            osascript -e "tell application \"System Events\" to tell every desktop to set picture to \"$wallpaper_path\""
+            ;;
+        Linux)
+            # Detect desktop environment and use appropriate command
+            if command -v gsettings >/dev/null 2>&1 && [[ -n "${GNOME_DESKTOP_SESSION_ID:-}" ]] || [[ "$XDG_CURRENT_DESKTOP" == *"GNOME"* ]]; then
+                # GNOME
+                gsettings set org.gnome.desktop.background picture-uri "file://$wallpaper_path"
+                gsettings set org.gnome.desktop.background picture-uri-dark "file://$wallpaper_path"
+            elif command -v plasma-apply-wallpaperimage >/dev/null 2>&1; then
+                # KDE Plasma
+                plasma-apply-wallpaperimage "$wallpaper_path"
+            elif command -v feh >/dev/null 2>&1; then
+                # feh (common for tiling WMs)
+                feh --bg-fill "$wallpaper_path"
+            elif command -v nitrogen >/dev/null 2>&1; then
+                # nitrogen
+                nitrogen --set-zoom-fill "$wallpaper_path" --save
+            elif command -v xwallpaper >/dev/null 2>&1; then
+                # xwallpaper
+                xwallpaper --zoom "$wallpaper_path"
+            elif [[ "$XDG_CURRENT_DESKTOP" == *"sway"* ]] && command -v swaymsg >/dev/null 2>&1; then
+                # Sway
+                swaymsg output '*' bg "$wallpaper_path" fill
+            elif [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && command -v hyprctl >/dev/null 2>&1; then
+                # Hyprland
+                dms ipc call wallpaper set "$wallpaper_path"
+            else
+                echo "Error: Could not detect wallpaper setter. Please set wallpaper manually or install feh/nitrogen" >&2
+                exit 1
+            fi
+            ;;
+        *)
+            echo "Error: Unsupported platform: $(uname -s)" >&2
+            exit 1
+            ;;
+    esac
+    
+    echo "✓ Wallpaper set to: $(basename "$wallpaper_path")"
+}
+
+# ============ ACTIONS ============
+action_next() {
+    load_state
+    
+    local wallpapers
+    mapfile -t wallpapers < <(get_wallpaper_list "$mode")
+    local total="${#wallpapers[@]}"
+    
+    if [[ $total -eq 0 ]]; then
+        echo "Error: No wallpapers found in $WALLPAPER_BASE/$mode" >&2
+        exit 1
+    fi
+    
+    # Calculate next index (wrap around)
+    local new_index=$(( (index + 1) % total ))
+    local wallpaper="${wallpapers[$new_index]}"
+    
+    set_wallpaper "$wallpaper"
+    save_state "$mode" "$new_index"
+    echo "Mode: $mode | Position: $((new_index + 1))/$total"
+}
+
+action_prev() {
+    load_state
+    
+    local wallpapers
+    mapfile -t wallpapers < <(get_wallpaper_list "$mode")
+    local total="${#wallpapers[@]}"
+    
+    if [[ $total -eq 0 ]]; then
+        echo "Error: No wallpapers found in $WALLPAPER_BASE/$mode" >&2
+        exit 1
+    fi
+    
+    # Calculate previous index (wrap around)
+    local new_index=$(( (index - 1 + total) % total ))
+    local wallpaper="${wallpapers[$new_index]}"
+    
+    set_wallpaper "$wallpaper"
+    save_state "$mode" "$new_index"
+    echo "Mode: $mode | Position: $((new_index + 1))/$total"
+}
+
+action_random() {
+    load_state
+    
+    local wallpapers
+    mapfile -t wallpapers < <(get_wallpaper_list "$mode")
+    local total="${#wallpapers[@]}"
+    
+    if [[ $total -eq 0 ]]; then
+        echo "Error: No wallpapers found in $WALLPAPER_BASE/$mode" >&2
+        exit 1
+    fi
+    
+    # Pick random index
+    local new_index=$((RANDOM % total))
+    local wallpaper="${wallpapers[$new_index]}"
+    
+    set_wallpaper "$wallpaper"
+    save_state "$mode" "$new_index"
+    echo "Mode: $mode | Position: $((new_index + 1))/$total (random)"
+}
+
+action_toggle_mode() {
+    load_state
+    
+    # Toggle between main and xtras
+    local new_mode
+    if [[ "$mode" == "main" ]]; then
+        new_mode="xtras"
+    else
+        new_mode="main"
+    fi
+    
+    # Verify the new directory exists
+    if [[ ! -d "$WALLPAPER_BASE/$new_mode" ]]; then
+        echo "Error: Directory $WALLPAPER_BASE/$new_mode does not exist" >&2
+        exit 1
+    fi
+    
+    # Reset index when switching modes
+    save_state "$new_mode" "0"
+    
+    # Set first wallpaper in new mode
+    local wallpapers
+    mapfile -t wallpapers < <(get_wallpaper_list "$new_mode")
+    local total="${#wallpapers[@]}"
+    
+    if [[ $total -eq 0 ]]; then
+        echo "Warning: No wallpapers found in $WALLPAPER_BASE/$new_mode"
+        echo "Switched to mode: $new_mode"
+        return
+    fi
+    
+    set_wallpaper "${wallpapers[0]}"
+    echo "Switched to mode: $new_mode | Position: 1/$total"
+}
+
+action_status() {
+    load_state
+    
+    local wallpapers
+    mapfile -t wallpapers < <(get_wallpaper_list "$mode")
+    local total="${#wallpapers[@]}"
+    
+    echo "Current mode: $mode"
+    echo "Current position: $((index + 1))/$total"
+    if [[ $total -gt 0 ]]; then
+        echo "Current wallpaper: $(basename "${wallpapers[$index]}")"
+    fi
+}
+
+# ============ MAIN ============
+case "${1:-}" in
+    next|n)
+        action_next
+        ;;
+    prev|p|previous)
+        action_prev
+        ;;
+    mode|m|toggle)
+        action_toggle_mode
+        ;;
+    random|r|rand)
+        action_random
+        ;;
+    status|s)
+        action_status
+        ;;
+    *)
+        cat <<EOF
+Wallpaper Switcher
+
+Usage:
+  $(basename "$0") next|n          - Next wallpaper in current mode
+  $(basename "$0") prev|p          - Previous wallpaper in current mode
+  $(basename "$0") mode|m          - Toggle between main/xtras modes
+  $(basename "$0") random|r        - Random wallpaper in current mode
+  $(basename "$0") status|s        - Show current status
+
+Environment:
+  WALLPAPER_BASE                   - Base directory for wallpapers (default: ~/wp)
+  
+Directory structure expected:
+  \$WALLPAPER_BASE/main/           - Main wallpaper collection
+  \$WALLPAPER_BASE/xtras/          - Extra wallpaper collection
+
+Current config:
+  Base directory: $WALLPAPER_BASE
+  State file: $STATE_FILE
+EOF
+        exit 1
+        ;;
+esac

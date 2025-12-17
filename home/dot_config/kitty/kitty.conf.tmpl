@@ -1,0 +1,108 @@
+shell zsh
+# vim:fileencoding=utf-8:ft=conf
+
+font_family      Fira Code Regular
+font_size        14.0
+font_features +liga
+
+# Window Configuration
+window_padding_width 12
+background_opacity 0.90
+background_blur 32
+hide_window_decorations yes
+
+cursor_shape     block
+cursor_blink_interval     0.5
+cursor_stop_blinking_after 15.0
+
+scrollback_lines 3000
+
+# Terminal features
+copy_on_select yes
+strip_trailing_spaces smart
+
+tab_bar_style powerline
+tab_bar_align left
+
+mouse_hide_wait 0.0
+enable_audio_bell no
+open_url_modifiers ctrl+shift
+
+term xterm-kitty
+
+# Tab settings
+tab_title_max_length 0
+tab_title_template "{title.split(':')[-1]}"
+
+# Key mapping
+
+# Clipboard
+map super+v             paste_from_clipboard
+map ctrl+shift+s        paste_from_selection
+map super+c             copy_to_clipboard
+map shift+insert        paste_from_selection
+
+
+# Scrolling
+map ctrl+shift+k         scroll_line_up
+map ctrl+shift+j         scroll_line_down
+map ctrl+shift+page_up   scroll_page_up
+map ctrl+shift+page_down scroll_page_down
+map ctrl+shift+home      scroll_home
+map ctrl+shift+end       scroll_end
+
+# copy-paste, clipboard, vim-like, select-text
+map ctrl+shift+e kitten hints --program @
+# open scrollback with ctrl+h
+# map ctrl+shift+e kitten hints --program @
+
+# Miscellaneous
+map ctrl+shift+plus    discard_event
+map ctrl+shift+equal    discard_event
+map ctrl+shift+kp_add    discard_event
+map ctrl+shift+- send_text all \x1f
+map ctrl+shift+up      change_font_size current +2.0
+map ctrl+shift+down    change_font_size current -2.0
+map ctrl+shift+backspace restore_font_size
+map ctrl+shift+t new_tab_with_cwd
+map ctrl+shift+n new_os_window_with_cwd
+
+shell_integration enabled
+# required by kitty-scrollback
+allow_remote_control yes
+listen_on unix:/tmp/mykitty
+
+# kitty-scrollback.nvim Kitten alias
+action_alias kitty_scrollback_nvim kitten ~/.local/share/nvim/lazy/kitty-scrollback.nvim/python/kitty_scrollback_nvim.py
+# Browse scrollback buffer in nvim
+map ctrl+shift+h kitty_scrollback_nvim
+# Browse output of the last shell command in nvim
+map ctrl+shift+g kitty_scrollback_nvim --config ksb_builtin_last_cmd_output
+# Show clicked command output in nvim
+mouse_map ctrl+shift+right press ungrabbed combine : mouse_select_command_output : kitty_scrollback_nvim --config ksb_builtin_last_visited_cmd_output
+
+confirm_os_window_close 0
+
+#symbol_map U+E0A0-U+E0A2,U+E0B0-U+E0B3 PowerlineSymbols
+hide_window_decorations titlebar-only
+macos_option_as_alt left
+remember_window_size  no
+
+
+{{ if eq .chezmoi.os "darwin" -}}
+# MacOS fix many doc items
+macos_quit_when_last_window_closed no
+
+# for macOS because of global mappings
+map ctrl+alt+cmd+f send_text all \x1bf
+map ctrl+alt+cmd+b send_text all \x1bb
+map ctrl+alt+cmd+d send_text all \x1bd
+{{- end }}
+
+{{ if eq .chezmoi.hostname "jssc" -}}
+# Dank color generation
+include dank-theme.conf
+{{- else -}}
+# Catppuccin-Frappe
+include themes/frappe.conf
+{{ end -}}

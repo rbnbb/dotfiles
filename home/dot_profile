@@ -1,0 +1,17 @@
+# ~/.profile
+# avoid being sourced multiple times
+[ -n "$PROFILE_LOADED" ] && return
+export PROFILE_LOADED=1
+
+# environment variables common to all shells
+export EDITOR=vim
+export TERM=xterm-256color
+
+if [ "$(uname)" = 'Darwin' ]; then
+    [ -d "$HOME/homebrew/bin" ] && PATH="$HOME/homebrew/bin:$PATH"
+    [ -d "/opt/homebrew/bin" ] && PATH="/opt/homebrew/bin:$PATH"
+fi
+[ -d "$HOME/bin" ] && PATH="$HOME/bin:$PATH"
+[ -d "$HOME/.local/bin" ] && PATH="$HOME/.local/bin:$PATH"
+
+export PATH

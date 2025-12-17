@@ -1,0 +1,28 @@
+{{ if ne .chezmoi.os "darwin" }}
+.config/karabiner
+.config/aerospace
+{{ end }}
+
+{{ if ne .chezmoi.hostname "jssc" }}
+.config/hypr
+.config/imv
+{{ else }}
+.config/kitty/themes
+{{ end }}
+
+{{ if not .personal }}
+.ssh/id_ed25519
+{{ end }}
+
+{{ if .headless }}
+.config/sioyek
+.config/nvim
+.config/delta
+.julia
+.kitty
+.gitignore_global
+.local/bin/wallpaper-switcher
+{{ end }}
+
+key.txt.age
+.chezmoiscripts/

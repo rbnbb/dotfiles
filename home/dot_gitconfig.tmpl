@@ -1,0 +1,40 @@
+[user]
+    name = rbnbb
+    email = rbnbb@users.noreply.github.com
+
+[init]
+    defaultBranch = main
+
+[pull]
+    rebase = true
+
+{{ if .headless -}}
+[merge]
+    tool = vimdiff3
+
+[core]
+    editor = vim
+{{ else -}}
+[merge]
+    tool = nvimdiff3
+
+[core]
+    pager = "if [ ! -z \"$(which delta)\" ]; then delta; else less; fi"
+    editor = nvim
+    excludesfile = ~/.gitignore_global
+
+[interactive]
+    diffFilter = delta --color-only --features=interactive
+
+[include]
+    path = ~/.config/delta/themes/catppuccin.gitconfig
+
+[delta]
+    features = decorations
+    navigate = true
+    true-color = always
+    features = catppuccin-frappe
+
+[credential]
+    helper = store
+{{-  end }}

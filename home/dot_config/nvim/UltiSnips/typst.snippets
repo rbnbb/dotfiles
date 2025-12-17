@@ -1,0 +1,38 @@
+snippet mk "Math" wA
+$${1:${VISUAL}}$`!p
+if t[2] and t[2][0] not in [',', '.', '?', '-', ' ']:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$2
+endsnippet
+
+snippet dm "Display Math" bA
+$ ${1:${VISUAL}} $
+$2
+endsnippet
+
+snippet __ "subscript" iA
+_($1)$0
+endsnippet
+
+snippet ^^ "exponent par expansion {}" iA
+^($1)$0
+endsnippet
+
+snippet ** "bold" iA
+*${1:${VISUAL}}*$0
+endsnippet
+
+snippet dag "dagger" iA
+^dagger $0
+endsnippet
+
+snippet fig "Include figure from ./figs" bA
+#figure(
+  image("./figs/${1:filename}", width: 80%),
+  caption: [
+    ${3:caption}
+  ],
+)$0
+endsnippet

@@ -1,0 +1,124 @@
+#!/bin/bash
+# Install additional tools: autojump, vim/neovim, delta
+
+echo "=== Additional Tools Setup ==="
+echo ""
+
+# Use sudo only if not root and sudo exists
+SUDO=""
+if [ "$(id -u)" -ne 0 ]; then
+    if command -v sudo &> /dev/null; then
+        SUDO="sudo"
+    fi
+fi
+
+#==== Autojump-rs (Rust rewrite) ====#
+if command -v autojump &> /dev/null; then
+    echo "✓ autojump is already installed"
+else
+    echo "autojump-rs is not installed (fast directory jumping in Rust)."
+    read -p "Install autojump-rs? [Y/n]: " choice
+    choice=${choice:-Y}
+
+    if [[ "$choice" =~ ^[Yy]$ ]]; then
+        if command -v pacman &> /dev/null; then
+            # AUR: autojump-rs
+            if command -v yay &> /dev/null; then
+                yay -S --noconfirm autojump-rs || echo "⚠ autojump-rs install failed"
+            elif command -v paru &> /dev/null; then
+                paru -S --noconfirm autojump-rs || echo "⚠ autojump-rs install failed"
+            else
+                echo "⚠ Need yay/paru for AUR. Install manually: https://github.com/xen0n/autojump-rs"
+            fi
+        elif command -v cargo &> /dev/null; then
+            cargo install autojump-rs || echo "⚠ cargo install failed"
+        elif command -v brew &> /dev/null; then
+            # Fallback to original on macOS (autojump-rs not in homebrew)
+            echo "autojump-rs not in homebrew, installing original autojump..."
+            brew install autojump || echo "⚠ autojump install failed"
+        else
+            echo "⚠ Need cargo or AUR helper to install autojump-rs."
+            echo "  Install cargo first, or get binary from: https://github.com/xen0n/autojump-rs"
+        fi
+    fi
+fi
+echo ""
+
+#==== Vim ====#
+if command -v vim &> /dev/null; then
+    echo "✓ vim is already installed"
+else
+    echo "vim is not installed."
+    read -p "Install vim? [Y/n]: " choice
+    choice=${choice:-Y}
+
+    if [[ "$choice" =~ ^[Yy]$ ]]; then
+        if command -v apt-get &> /dev/null; then
+            $SUDO apt-get update && $SUDO apt-get install -y vim || echo "⚠ vim install failed"
+        elif command -v dnf &> /dev/null; then
+            $SUDO dnf install -y vim-enhanced || echo "⚠ vim install failed"
+        elif command -v pacman &> /dev/null; then
+            $SUDO pacman -S --noconfirm vim || echo "⚠ vim install failed"
+        elif command -v brew &> /dev/null; then
+            brew install vim || echo "⚠ vim install failed"
+        else
+            echo "⚠ No supported package manager found. Install vim manually."
+        fi
+    fi
+fi
+echo ""
+
+{{ if .personal -}}
+#==== Neovim (for personal machines) ====#
+if command -v nvim &> /dev/null; then
+    echo "✓ neovim is already installed"
+else
+    echo "neovim is not installed (recommended for personal machines)."
+    read -p "Install neovim? [Y/n]: " choice
+    choice=${choice:-Y}
+
+    if [[ "$choice" =~ ^[Yy]$ ]]; then
+        if command -v apt-get &> /dev/null; then
+            $SUDO apt-get update && $SUDO apt-get install -y neovim || echo "⚠ neovim install failed"
+        elif command -v dnf &> /dev/null; then
+            $SUDO dnf install -y neovim || echo "⚠ neovim install failed"
+        elif command -v pacman &> /dev/null; then
+            $SUDO pacman -S --noconfirm neovim || echo "⚠ neovim install failed"
+        elif command -v brew &> /dev/null; then
+            brew install neovim || echo "⚠ neovim install failed"
+        else
+            echo "⚠ No supported package manager found."
+            echo "  Install from: https://github.com/neovim/neovim/releases"
+        fi
+    fi
+fi
+echo ""
+
+#==== Delta (git pager, for personal machines) ====#
+if command -v delta &> /dev/null; then
+    echo "✓ delta is already installed"
+else
+    echo "delta is not installed (beautiful git diffs)."
+    read -p "Install delta? [Y/n]: " choice
+    choice=${choice:-Y}
+
+    if [[ "$choice" =~ ^[Yy]$ ]]; then
+        if command -v apt-get &> /dev/null; then
+            $SUDO apt-get update && $SUDO apt-get install -y git-delta || echo "⚠ delta install failed"
+        elif command -v dnf &> /dev/null; then
+            $SUDO dnf install -y git-delta || echo "⚠ delta install failed"
+        elif command -v pacman &> /dev/null; then
+            $SUDO pacman -S --noconfirm git-delta || echo "⚠ delta install failed"
+        elif command -v brew &> /dev/null; then
+            brew install git-delta || echo "⚠ delta install failed"
+        else
+            echo "⚠ No supported package manager found."
+            echo "  Install from: https://github.com/dandavison/delta/releases"
+        fi
+    fi
+fi
+{{ end -}}
+
+echo ""
+echo "=== Tool installation complete ==="
+exit 0

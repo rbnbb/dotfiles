@@ -1,0 +1,53 @@
+#!/bin/bash
+# Install Oh My Zsh and Powerlevel10k theme
+
+# Check if Oh My Zsh is installed
+if [ -d "$HOME/.oh-my-zsh" ]; then
+    echo "✓ Oh My Zsh is already installed"
+else
+    echo "Oh My Zsh is not installed."
+    echo ""
+    read -p "Install Oh My Zsh? [Y/n]: " choice
+    choice=${choice:-Y}
+
+    if [[ "$choice" =~ ^[Yy]$ ]]; then
+        echo "Installing Oh My Zsh..."
+        if sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended; then
+            echo "✓ Oh My Zsh installed"
+        else
+            echo "⚠ Oh My Zsh installation failed. You can install manually later."
+        fi
+    else
+        echo "Skipping Oh My Zsh installation"
+    fi
+fi
+
+# Check if Powerlevel10k is installed
+P10K_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+
+if [ -d "$P10K_DIR" ]; then
+    echo "✓ Powerlevel10k is already installed"
+elif [ -d "$HOME/.oh-my-zsh" ]; then
+    echo "Powerlevel10k theme is not installed."
+    echo ""
+    read -p "Install Powerlevel10k? [Y/n]: " choice
+    choice=${choice:-Y}
+
+    if [[ "$choice" =~ ^[Yy]$ ]]; then
+        echo "Installing Powerlevel10k..."
+        if git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$P10K_DIR"; then
+            echo "✓ Powerlevel10k installed"
+            echo ""
+            echo "Note: For best experience, install a Nerd Font:"
+            echo "  https://github.com/romkatv/powerlevel10k#fonts"
+        else
+            echo "⚠ Powerlevel10k installation failed. You can install manually later."
+        fi
+    else
+        echo "Skipping Powerlevel10k installation"
+    fi
+else
+    echo "Skipping Powerlevel10k (Oh My Zsh not installed)"
+fi
+
+exit 0
