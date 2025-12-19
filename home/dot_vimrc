@@ -62,3 +62,4 @@ call plug#end()
 
 set termguicolors
 silent! colorscheme catppuccin_frappe
+hi Normal ctermbg=NONE guibg=NONE  " transparent background
