@@ -10,7 +10,8 @@ if [ -z $PROFILE_LOADED ]; then
     path+=("$HOME/.local/bin")
     export PROFILE_LOADED=1
 fi
-path+=($HOME'/.juliaup/bin')
+[ -x "$(which juliaup)" ] && path+=($HOME'/.juliaup/bin')
+[ -x "$(which cargo)" ] && path+=($HOME'/.cargo/bin')
 export PATH
 
 #==== Oh-My-Zsh ====#
