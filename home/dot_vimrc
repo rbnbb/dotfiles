@@ -19,6 +19,8 @@ let mapleader = " "
 nnoremap <silent> <leader><leader> :noh<CR>
 nnoremap <leader>j :w<CR>
 nnoremap <silent> "+y <leader>y
+" Because Ctrl+v is used for paste
+nnoremap <A-v> <C-V>
 
 set number
 set relativenumber

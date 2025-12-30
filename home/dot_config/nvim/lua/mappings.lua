@@ -106,6 +106,9 @@ map("n", "<leader>v", "printf('`[%s`]', getregtype()[0])", {
     desc = "reselect last pasted area",
 })
 
+-- I use Ctrl+v to paste in kitty for conformity, this breaks visual mode
+map("n", "<A-v>", "<C-v>")
+
 -- -- Always use very magic mode for searching
 -- map("n", "/", [[/\v]])
 
