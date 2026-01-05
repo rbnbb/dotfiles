@@ -123,6 +123,17 @@ local plugin_specs = {
         lazy = false,
         opts = {
             transparent_background = true,
+            -- custom_highlights = function(colors)
+            -- cusomize colors a bit
+            -- return {
+            -- NormalFloat = { bg = "NONE" },
+            -- Floatborder = { bg = "NONE" },
+            -- Pmenu = { bg = "NONE" },
+            -- PmenuSel = { bg = colors.surface0 },
+            -- TelescopeNormal = { bg = "NONE"},
+            -- TelescopeBorder = { bg = "NONE"},
+            --     }
+            -- end,
         },
         enable_in_kitty_scrollback = true,
     },
@@ -213,14 +224,14 @@ local plugin_specs = {
         event = "VeryLazy"
     },
     {
-      "ray-x/lsp_signature.nvim",
-      event = "InsertEnter",
-      opts = {
-        bind = true,
-        handler_opts = {
-          border = "rounded"
+        "ray-x/lsp_signature.nvim",
+        event = "InsertEnter",
+        opts = {
+            bind = true,
+            handler_opts = {
+                border = "rounded"
+            }
         }
-      }
     },
     {
         "lervag/vimtex",
@@ -263,26 +274,30 @@ local plugin_specs = {
     },
     { "tpope/vim-scriptease",     cmd = { "Scriptnames", "Message", "Verbose" } },
     -- Asynchronous command execution
-    { "skywind3000/asyncrun.vim", lazy = true,                                  cmd = { "AsyncRun" }, ft = {"typst", "mermaid"} },
-    { "cespare/vim-toml",   ft = { "toml" }, branch = "main" },
+    { "skywind3000/asyncrun.vim", lazy = true,                                  cmd = { "AsyncRun" }, ft = { "typst", "mermaid" } },
+    { "cespare/vim-toml",         ft = { "toml" },                              branch = "main" },
     {
-      'chomosuke/typst-preview.nvim',
-      ft = 'typst',
-      version = '1.*',
-      opts = {}, -- lazy.nvim will implicitly calls `setup {}`
+        'chomosuke/typst-preview.nvim',
+        ft = 'typst',
+        version = '1.*',
+        opts = {}, -- lazy.nvim will implicitly calls `setup {}`
+        cmd = { "TypstPreviewToggle", "TypstPreview", "TypstPreviewStop" },
         config = function()
-            vim.keymap.set('n', '\\ll', ":TypstPreviewToggle<CR>", {noremap = true})
+            vim.keymap.set('n', '\\ll', ":TypstPreviewToggle<CR>", { noremap = true })
+            -- require 'typst-preview'.setup{
+            -- open_cmd = 'firefox --new-window "%s" -P typst-preview --class typst-preview'
+            -- }
         end,
     },
-    -- {
-    --     "iamcco/markdown-preview.nvim",
-    --     cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-    --     ft = { "markdown" },
-    --       build = "cd app && npm install",
-    --   init = function()
-    --     vim.g.mkdp_filetypes = { "markdown" }
-    --   end,
-    -- },
+    {
+        "iamcco/markdown-preview.nvim",
+        cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+        build = "cd app && yarn install",
+        init = function()
+            vim.g.mkdp_filetypes = { "markdown" }
+        end,
+        ft = { "markdown" },
+    },
     --     -- Edit text area in browser using nvim
     --     {
     --         "glacambre/firenvim",
@@ -324,7 +339,7 @@ local plugin_specs = {
             require("config.nvim-tree")
         end,
     },
-    { "ii14/emmylua-nvim",        ft = "lua" }, -- make luals neovim aware
+    { "ii14/emmylua-nvim",       ft = "lua" }, -- make luals neovim aware
     -- {
     --     "j-hui/fidget.nvim",
     --     event = "VeryLazy",
@@ -353,7 +368,7 @@ local plugin_specs = {
     {
         "greggh/claude-code.nvim",
         dependencies = {
-          "nvim-lua/plenary.nvim", -- Required for git operations
+            "nvim-lua/plenary.nvim", -- Required for git operations
         },
         config = function()
             require("config.claude-code")
@@ -384,7 +399,7 @@ for _, spec in ipairs(plugin_specs) do
     if not spec.enable_in_kitty_scrollback then
         local old_cond = spec.cond
         spec.cond = function()
-            local base_ok = (old_cond == nil) or old_cond()  -- no condion treated as true
+            local base_ok = (old_cond == nil) or old_cond() -- no condion treated as true
             local not_kitty = vim.env.KITTY_SCROLLBACK_NVIM ~= 'true'
             return base_ok and not_kitty
         end
