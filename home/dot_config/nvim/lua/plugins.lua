@@ -230,7 +230,8 @@ local plugin_specs = {
             bind = true,
             handler_opts = {
                 border = "rounded"
-            }
+            },
+            toggle_key = '<C-,>'
         }
     },
     {
