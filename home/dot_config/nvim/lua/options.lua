@@ -86,6 +86,7 @@ local options = {
     updatetime = 1000,
     undofile = true,
     undodir = vim.fn.expand("$HOME/.config/nvim/undo"),
+    viewdir = vim.fn.expand("$HOME/.local/state/nvim/view"),
     splitright = true,
     splitbelow = true,
     mouse = "a",

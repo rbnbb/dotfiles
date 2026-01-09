@@ -55,13 +55,13 @@ map("n", "[Q", "<cmd>cfirst<cr>zv", { silent = true, desc = "first qf item" })
 map("n", "]Q", "<cmd>clast<cr>zv", { silent = true, desc = "last qf item" })
 
 -- Close location list or quickfix list if they are present, see https://superuser.com/q/355325/736190
-map("n", [[\x]], "<cmd>windo lclose <bar> cclose <cr>", {
+map("n", [[,x]], "<cmd>windo lclose <bar> cclose <cr>", {
     silent = true,
     desc = "close qf and location list",
 })
 
 -- Close all windows but current, call only
-map("n", [[\o]], "<cmd>only<cr>", {
+map("n", [[,o]], "<cmd>only<cr>", {
     silent = true,
     desc = "close all other windows",
 })
