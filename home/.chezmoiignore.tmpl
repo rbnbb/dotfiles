@@ -6,6 +6,7 @@
 {{ if (or (ne .chezmoi.os "linux") (.headless)) }}
 .config/hypr
 .config/imv
+.autojump
 {{ else }}
 .config/kitty/themes
 {{ end }}
