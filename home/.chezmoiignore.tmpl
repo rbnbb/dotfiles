@@ -3,7 +3,7 @@
 .config/aerospace
 {{ end }}
 
-{{ if ne .chezmoi.hostname "jssc" }}
+{{ if (or (ne .chezmoi.os "linux") (.headless)) }}
 .config/hypr
 .config/imv
 {{ else }}
