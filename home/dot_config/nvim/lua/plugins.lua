@@ -10,12 +10,7 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 -- python path for UltiSnips, etc.
-local uname = vim.loop.os_uname()
-if uname.sysname == 'Darwin' or uname.sysname == 'Linux' then
-    local pypath = vim.fn.expand("$HOME/.virtualenvs/nvim/venv/bin/")
-    vim.cmd("let g:python3_host_prog='" .. pypath .. "python3'")
-    vim.env.PATH = pypath .. ":" .. vim.env.PATH
-end
+require("config.providers")
 
 -- check if firenvim is active
 -- local firenvim_not_active = function()
