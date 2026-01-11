@@ -11,7 +11,7 @@ vim.opt.rtp:prepend(lazypath)
 
 -- python path for UltiSnips, etc.
 local uname = vim.loop.os_uname()
-if uname.sysname == 'Darwin' then
+if uname.sysname == 'Darwin' or uname.sysname == 'Linux' then
     local pypath = vim.fn.expand("$HOME/.virtualenvs/nvim/venv/bin/")
     vim.cmd("let g:python3_host_prog='" .. pypath .. "python3'")
     vim.env.PATH = pypath .. ":" .. vim.env.PATH
@@ -52,35 +52,45 @@ local plugin_specs = {
     },
     {
         "nvim-treesitter/nvim-treesitter",
-        enabled = true, -- function()
-        -- if vim.g.is_mac then
-        --     return true
-        -- end
-        -- return false
-        -- end,
-        event = "VeryLazy",
+        branch = "main",
         build = ":TSUpdate",
+        event = "VeryLazy",
         config = function()
-            require("nvim-treesitter.configs").setup {
+            require("nvim-treesitter").setup({
                 ensure_installed = { "vimdoc", "julia", "python", "cpp", "lua", "vim", "json", "toml" },
-                ignore_install = {},
-                highlight = {
-                    enable = true,
-                    disable = { 'markdown', 'help', 'vimdoc', 'tex' },
-                },
-                indent = {
-                    enable = true,
-                    disable = { "julia", "json" },
-                },
-                matchup = {
-                    enable = true,
-                    disable = { 'markdown', 'help', 'vimdoc', 'tex' },
-                },
-            }
+            })
+
+            -- Filetypes to disable highlighting
+            local highlight_disabled = { "markdown", "help", "vimdoc", "tex" }
+            -- Filetypes to disable indentation
+            local indent_disabled = { "julia", "json" }
+
+            vim.api.nvim_create_autocmd("FileType", {
+                callback = function(ev)
+                    local buf = ev.buf
+                    local ft = vim.bo[buf].filetype
+
+                    -- Try to start treesitter highlighting
+                    local ok = pcall(vim.treesitter.start, buf)
+                    if not ok then return end
+
+                    -- Disable highlighting for specific filetypes
+                    if vim.tbl_contains(highlight_disabled, ft) then
+                        vim.treesitter.stop(buf)
+                    end
+
+                    -- Enable treesitter indentation (unless disabled)
+                    if not vim.tbl_contains(indent_disabled, ft) then
+                        vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+                    end
+                end,
+            })
         end,
     },
     -- Python indent (follows the PEP8 style)
     { "Vimjas/vim-python-pep8-indent", ft = { "python" } },
+    -- fix built-in spellfile downloader if netrw is disabled
+    { "cuducos/spellfile.nvim" },
     -- Python-related text object
     { "jeetsukumaran/vim-pythonsense", ft = { "python" } },
     { "machakann/vim-swap",            event = "VeryLazy" },
