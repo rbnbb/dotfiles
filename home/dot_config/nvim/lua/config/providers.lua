@@ -6,6 +6,8 @@ local function setup_python_provider()
     -- Check if venv already exists and works
     if vim.fn.executable(python_path) == 1 then
         vim.g.python3_host_prog = python_path
+        vim.opt.path:append(venv_path .. "/bin")
+        
         return true
     end
 
@@ -38,7 +40,7 @@ vim.api.nvim_create_user_command("SetupPythonProvider", function()
     vim.fn.jobstart({
         "sh", "-c",
         string.format(
-            "mkdir -p %s && python3 -m venv %s && %s/bin/pip install --upgrade pip pynvim",
+            "mkdir -p %s && python3 -m venv %s && %s/bin/pip install --upgrade pip pynvim python-lsp-server",
             vim.fn.shellescape(venv_path),
             vim.fn.shellescape(venv_path),
             venv_path
