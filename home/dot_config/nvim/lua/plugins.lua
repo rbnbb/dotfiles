@@ -31,7 +31,6 @@ local plugin_specs = {
             "hrsh7th/cmp-emoji",
             "hrsh7th/cmp-nvim-lsp-signature-help",
             "quangnguyen30192/cmp-nvim-ultisnips",
-            "L3MON4D3/LuaSnip",
             "saadparwaiz1/cmp_luasnip",
         },
         config = function()

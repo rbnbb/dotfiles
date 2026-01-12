@@ -1,23 +1,24 @@
--- DEPRACATE my ad-hoc compiler in favor of chomosuke/typst-preview ✨
--- use \ll to start compiling file and launch os viewer
--- local map = vim.keymap.set
--- local uname = vim.loop.os_uname()
--- local pdf_app = "exit"
--- if uname.sysname == 'Darwin' then
---     pdf_app = "open -a sioyek"  -- Skim.app"  -- old app
--- else
---     pdf_app = "okular"
--- end
+-- don't DEPRACATE my ad-hoc compiler in favor of chomosuke/typst-preview ✨
+-- keep both for when typst preview give no output
+-- use ,ll to start compiling file and launch os viewer
+local map = vim.keymap.set
+local uname = vim.loop.os_uname()
+local pdf_app = "exit"
+if uname.sysname == 'Darwin' then
+    pdf_app = "open -a sioyek"  -- Skim.app"  -- old app
+else
+    pdf_app = "sioyek"
+end
 
 -- Map it
 -- vim.api.nvim_set_keymap('n', '<leader>p', ':lua start_pdf_viewer()<CR>', { noremap = true, silent = true })
 
--- local start_typst_compiler = ":AsyncStop <CR>:AsyncRun typst watch % <CR>"
--- map("n", "\\ll", start_typst_compiler)
--- map("n", "\\lv", function()
---   local pdf_file = vim.fn.expand('%:r') .. '.pdf'
---   vim.fn.jobstart({'sh', '-c', pdf_app .. ' ' .. pdf_file})
--- end, {noremap=true, silent=false})
+local start_typst_compiler = ":AsyncStop <CR>:AsyncRun typst watch % <CR>"
+map("n", ",ll", start_typst_compiler)
+map("n", ",lv", function()
+  local pdf_file = vim.fn.expand('%:r') .. '.pdf'
+  vim.fn.jobstart({'sh', '-c', pdf_app .. ' ' .. pdf_file})
+end, {noremap=true, silent=false})
 
 -- Function to parse and replace arXiv IDs with Typst links
 local function arxiv_to_typst_link()
