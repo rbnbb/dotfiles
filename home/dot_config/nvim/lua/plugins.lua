@@ -48,10 +48,15 @@ local plugin_specs = {
         "nvim-treesitter/nvim-treesitter",
         branch = "main",
         build = ":TSUpdate",
-        event = "VeryLazy",
+        event = { "BufReadPost", "BufNewFile" },
         config = function()
             require("nvim-treesitter").setup({
                 ensure_installed = { "vimdoc", "julia", "python", "cpp", "lua", "vim", "json", "toml" },
+                highlight = { enable = true, disable = { "markdown", "help", "vimdoc", "tex" } },
+                indent = {
+                    enable = true,
+                    disable = { "julia", "json" },
+                },
             })
 
             -- Filetypes to disable highlighting

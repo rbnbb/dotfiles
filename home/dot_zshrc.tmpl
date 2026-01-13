@@ -7,12 +7,9 @@ fi
 
 #==== Path (only once) ====#
 if [ -z $PROFILE_LOADED ]; then
-    path+=("$HOME/.local/bin")
+    source $HOME/.profile
     export PROFILE_LOADED=1
 fi
-[ -x "$(which juliaup)" ] && path+=($HOME'/.juliaup/bin')
-[ -x "$(which cargo)" ] && path+=($HOME'/.cargo/bin')
-export PATH
 
 #==== Oh-My-Zsh ====#
 export ZSH="$HOME/.oh-my-zsh"

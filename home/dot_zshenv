@@ -1,0 +1,5 @@
+#==== Path (only once) ====#
+if [ -z $PROFILE_LOADED ]; then
+    source $HOME/.profile
+    export PROFILE_LOADED=1
+fi

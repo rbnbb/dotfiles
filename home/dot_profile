@@ -7,11 +7,14 @@ export PROFILE_LOADED=1
 export EDITOR=vim
 export TERM=xterm-256color
 
+[ -d "$HOME/bin" ] && PATH="$HOME/bin:$PATH"
+[ -d "$HOME/.local/bin" ] && PATH="$HOME/.local/bin:$PATH"
+[ -d "$HOME/.cargo/bin" ] && PATH="$HOME/.cargo/bin:$PATH"
+[ -d "$HOME/.juliaup/bin" ] && PATH="$HOME/.juliaup/bin:$PATH"
+
 if [ "$(uname)" = 'Darwin' ]; then
     [ -d "$HOME/homebrew/bin" ] && PATH="$HOME/homebrew/bin:$PATH"
     [ -d "/opt/homebrew/bin" ] && PATH="/opt/homebrew/bin:$PATH"
 fi
-[ -d "$HOME/bin" ] && PATH="$HOME/bin:$PATH"
-[ -d "$HOME/.local/bin" ] && PATH="$HOME/.local/bin:$PATH"
 
 export PATH

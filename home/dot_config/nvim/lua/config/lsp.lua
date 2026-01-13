@@ -30,6 +30,9 @@ local custom_attach = function(client, bufnr)
         keymap.set(mode, l, r, opts)
     end
 
+    if client and client.name == "julials" then
+        client.server_capabilities.semanticTokensProvider = nil
+    end
     local caps = client.server_capabilities or {}
 
     if caps.hover then  -- ltex-ls has no hover
