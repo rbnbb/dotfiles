@@ -208,6 +208,11 @@ end
 -- end
 
 if utils.executable("ltex-ls") then
+    local os_name = vim.loop.os_uname().sysname
+    if os_name == 'Darwin' then
+        vim.env.JAVA_HOME = "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
+    end
+
     vim.lsp.config('ltex', {
         cmd = { "bash", "-c", "ltex-ls 2> >(grep -v 'no common words file' >&2)" },
         filetypes = { "tex" },
