@@ -234,6 +234,19 @@ if utils.executable("ltex-ls") then
     vim.lsp.enable('ltex')
 end
 
+if utils.executable("vale-ls") then
+    vim.lsp.config('vale_ls', {
+        filetypes = { "markdown" },
+        flags = { debounce_text_changes = 300 },
+        vale = {
+            valeCLI = {
+                path = "vale",
+            },
+        },
+    })
+    vim.lsp.enable('vale_ls')
+end
+
 if utils.executable("clangd") then
     vim.lsp.config('clangd', {
         capabilities = capabilities,
