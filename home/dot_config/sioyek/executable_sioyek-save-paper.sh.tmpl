@@ -1,16 +1,121 @@
-#!/bin/bash
-# Get the current file path from sioyek
-CURRENT_FILE="$1"
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Target directory
+############################
+# CONFIG
+############################
+
 PAPERS_DIR="$HOME/physics/papers"
+ZOTERO_DB="$HOME/Zotero/zotero.sqlite"
+BIBLATEX_DB="$HOME/Zotero/better-bibtex.sqlite"
+LOG_FILE="$PAPERS_DIR/zread-unsorted.log"
+
 mkdir -p "$PAPERS_DIR"
 
-# Copy file to papers directory
-FILENAME=$(basename "$CURRENT_FILE")
-NEW_PATH="$PAPERS_DIR/zread-$FILENAME"
+############################
+# INPUT
+############################
 
-cp "$CURRENT_FILE" "$NEW_PATH"
+PDF="$1"
+BASENAME="$(basename "$PDF")"
+
+############################
+# SAFETY CHECKS
+############################
+
+if [[ ! -f "$PDF" ]]; then
+    echo "ERROR: PDF does not exist: $PDF" >&2
+    exit 1
+fi
+
+if [[ ! -f "$ZOTERO_DB" ]]; then
+    echo "ERROR: Zotero database not found at $ZOTERO_DB" >&2
+    exit 1
+fi
+
+############################
+# STEP 1 — EXTRACT IDENTIFIERS
+############################
+
+TEXT="$(pdftotext "$PDF" - 2>/dev/null || true)"
+
+DOI="$(echo "$TEXT" | grep -Eio '10\.[0-9]{4,9}/[^[:space:]]+' | head -n1 || true)"
+ARXIV="$(echo "$TEXT" | grep -Eio 'arXiv:[0-9]{4}\.[0-9]{4,5}' | head -n1 || true)"
+
+############################
+# STEP 2 — ZOTERO QUERY HELPERS
+############################
+
+query_zotero() {
+    local pattern="$1"
+    sqlite3 "$ZOTERO_DB" <<EOF
+SELECT DISTINCT items.itemID
+FROM items
+JOIN itemData ON items.itemID = itemData.itemID
+JOIN itemDataValues ON itemData.valueID = itemDataValues.valueID
+WHERE itemDataValues.value LIKE '%$pattern%';
+EOF
+}
+
+get_citation_key() {
+    local itemid="$1"
+    sqlite3 "$BIBLATEX_DB" <<EOF
+SELECT citationkey FROM citationkey WHERE itemID = $itemid
+EOF
+}
+
+############################
+# STEP 3 — MATCH DECISION TREE
+############################
+
+ITEM_IDS=""
+
+if [[ -n "$DOI" ]]; then
+    ITEM_IDS="$(query_zotero "$DOI")"
+fi
+
+if [[ -z "$ITEM_IDS" && -n "$ARXIV" ]]; then
+    ITEM_IDS="$(query_zotero "$ARXIV")"
+fi
+
+if [[ -z "$ITEM_IDS" ]]; then
+    STEM="${BASENAME%.pdf}"
+    ITEM_IDS="$(query_zotero "$STEM")"
+fi
+
+############################
+# STEP 4 — HANDLE RESULTS
+############################
+
+COUNT="$(echo "$ITEM_IDS" | sed '/^$/d' | wc -l | tr -d ' ')"
+
+if [[ "$COUNT" -eq 1 ]]; then
+    ITEM_ID="$(echo "$ITEM_IDS" | head -n1)"
+    CITEKEY="$(get_citation_key "$ITEM_ID")"
+
+    if [[ -z "$CITEKEY" ]]; then
+        echo "WARNING: Zotero item found but no citation key" >> "$LOG_FILE"
+        CITEKEY="UNSORTED-${BASENAME%.pdf}"
+    fi
+
+elif [[ "$COUNT" -gt 1 ]]; then
+    echo "AMBIGUOUS: multiple Zotero matches for $BASENAME" >> "$LOG_FILE"
+    echo "$ITEM_IDS" >> "$LOG_FILE"
+    CITEKEY="AMBIGUOUS-${BASENAME%.pdf}"
+
+else
+    echo "UNMATCHED: $BASENAME" >> "$LOG_FILE"
+    CITEKEY="UNSORTED-${BASENAME%.pdf}"
+fi
+
+############################
+# STEP 5 — FINALIZE
+############################
+
+SAFE_KEY="$(echo "$CITEKEY" | tr ' /:' '___')"
+NEW_PATH="$PAPERS_DIR/${SAFE_KEY}.pdf"
+
+cp "$PDF" "$NEW_PATH"
 
 # Open the new file in sioyek at the same location
 {{ if eq .chezmoi.os "darwin" }}
@@ -18,3 +123,5 @@ open -a sioyek "$NEW_PATH"
 {{ else }}
 sioyek "$NEW_PATH"
 {{ end -}}
+
+echo "Saved as: $NEW_PATH"
