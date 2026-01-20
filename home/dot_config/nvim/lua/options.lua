@@ -90,7 +90,6 @@ local options = {
     splitright = true,
     splitbelow = true,
     mouse = "a",
-    clipboard = "unnamedplus",
     backup = false,
     swapfile = false,
     completeopt = { "menuone", "noselect" },
