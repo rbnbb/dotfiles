@@ -170,7 +170,7 @@ ruler_x_padding 5.0
 # A directory which sioyek watches for new papers. If a new paper added to this directory
 # while we are creating a portal from another document, this new document will automatically
 # be used as the destination of the portal.
-#paper_folder_path /some/path
+paper_folder_path {{ .chezmoi.homeDir -}}/physics/papers
 
 # Enable some experimental features, might not be stable
 #enable_experimental_features 0

@@ -12,6 +12,15 @@ LOG_FILE="$PAPERS_DIR/zread-unsorted.log"
 
 mkdir -p "$PAPERS_DIR"
 
+# for non-interactive debugging 
+exec >>"$LOG_FILE" 2>&1
+log() { echo "[$(date '+%H:%M:%S')] $*"; }
+
+# path to exec on macOS
+if [[ $(uname) == "Darwin" ]]; then
+    export PATH="/opt/homebrew/bin:$PATH"
+fi
+
 ############################
 # INPUT
 ############################
