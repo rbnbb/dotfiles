@@ -55,6 +55,17 @@ ARXIV="$(echo "$TEXT" | grep -Eio 'arXiv:[0-9]{4}\.[0-9]{4,5}' | head -n1 || tru
 # STEP 2 — ZOTERO QUERY HELPERS
 ############################
 
+BBT_DB_SNAPSHOT="/tmp/better-bibtex.$$\.sqlite"
+
+snapshot_db() {
+    local src="$1"
+    local dst="$2"
+
+    cp "$src" "$dst"
+}
+
+snapshot_db "$BIBLATEX_DB" "$BBT_DB_SNAPSHOT"
+
 query_zotero() {
     local pattern="$1"
     sqlite3 "$ZOTERO_DB" <<EOF
@@ -68,7 +79,7 @@ EOF
 
 get_citation_key() {
     local itemid="$1"
-    sqlite3 "$BIBLATEX_DB" <<EOF
+    sqlite3 "$BBT_DB_SNAPSHOT" <<EOF
 SELECT citationkey FROM citationkey WHERE itemID = $itemid
 EOF
 }
@@ -116,6 +127,8 @@ else
     echo "UNMATCHED: $BASENAME" >> "$LOG_FILE"
     CITEKEY="UNSORTED-${BASENAME%.pdf}"
 fi
+
+rm -f "$BBT_DB_SNAPSHOT"
 
 ############################
 # STEP 5 — FINALIZE
