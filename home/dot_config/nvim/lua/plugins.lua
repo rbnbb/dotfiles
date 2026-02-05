@@ -266,7 +266,38 @@ local plugin_specs = {
             vim.keymap.set('n', '<leader>fw',
                 function() require('telescope.builtin').live_grep({ cwd = "~/wiki", prompt_title = "Wiki Search" }) end,
                 { noremap = true })
-            vim.keymap.set('n', '<leader>wp', ":WikiPages<CR>", { noremap = true })
+            vim.keymap.set('n', '<leader>wp',
+                function()
+                    require('telescope.builtin').find_files{
+                    cwd = vim.g.wiki_root,
+                    hidden = true,
+                    prompt_title = "Wiki Pages",
+                    find_command = { "rg", "--files" }
+                }
+                end,
+                { noremap = true })
+            vim.keymap.set('n', '<leader>fu',
+                function()
+                    require('telescope.builtin').live_grep({
+                        cwd = "~/wiki",
+                        prompt_title = "Wiki Search (all)",
+                        vimgrep_arguments = {
+                            "rg", "-L", "--no-ignore", "--color=never",
+                            "--no-heading", "--with-filename", "--line-number",
+                            "--column", "--smart-case"
+                        }
+                }) end,
+                { noremap = true })
+            vim.keymap.set('n', '<leader>up',
+                function()
+                    require('telescope.builtin').find_files{
+                    cwd = vim.g.wiki_root,
+                    hidden = true,
+                    prompt_title = "Wiki Pages (All)",
+                    find_command = { "rg", "--files", "-L", "--no-ignore" }
+                }
+                end,
+                { noremap = true })
             vim.keymap.set('n', ']j', ":WikiJournalNext<CR>", { noremap = true })
             vim.keymap.set('n', '[j', ":WikiJournalPrev<CR>", { noremap = true })
         end,
