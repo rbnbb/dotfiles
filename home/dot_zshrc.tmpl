@@ -23,6 +23,7 @@ export LANG=en_US.UTF-8
 export LESSCHARSET=utf-8
 export FZF_COMPLETION_TRIGGER=',,'
 export JULIA_NUM_THREADS=4
+export TLDR_AUTO_UPDATE_DISABLED=1
 {{ if eq .chezmoi.os "darwin" }}
 # androidSDK
 export JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.16/libexec/openjdk.jdk/Contents/Home/
@@ -35,6 +36,9 @@ if [[ -z $SSH_CONNECTION ]]; then
 else
   export EDITOR='vim'  # remote session
 fi
+
+
+setopt EXTENDED_GLOB
 
 #==== ALIASES ====#
 alias juliap='julia --project=.'
