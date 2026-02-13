@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=imv
+GenericName=Image Viewer
+Comment=Image viewer for tiling window managers
+Exec=imv-open %f
+Icon=multimedia-photo-viewer
+Type=Application
+Categories=Graphics;2DGraphics;Viewer;
+MimeType=image/bmp;image/gif;image/jpeg;image/jpg;image/png;image/svg+xml;image/tiff;image/webp;image/x-portable-anymap;image/x-portable-bitmap;image/x-portable-graymap;image/x-portable-pixmap;image/x-tga;

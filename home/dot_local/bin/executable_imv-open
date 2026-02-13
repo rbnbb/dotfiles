@@ -1,0 +1,33 @@
+#!/bin/bash
+# Open image in existing imv instance, or start new one with directory contents
+# so left/right navigation works
+
+file="$(realpath "$1")"
+dir="$(dirname "$file")"
+
+# Image extensions to include
+shopt -s nullglob nocaseglob
+images=("$dir"/*.{png,jpg,jpeg,gif,bmp,tiff,tif,webp,svg,ico,ppm,pgm,pbm})
+shopt -u nullglob nocaseglob
+
+# Find the index of the target file
+index=1
+for i in "${!images[@]}"; do
+    if [[ "${images[$i]}" == "$file" ]]; then
+        index=$((i + 1))
+        break
+    fi
+done
+
+# Try to send to existing instance, otherwise start new one
+if pidof imv-wayland >/dev/null 2>&1 || pidof imv-x11 >/dev/null 2>&1; then
+    pid=$(pidof imv-wayland 2>/dev/null || pidof imv-x11 2>/dev/null)
+    # Clear current files and load new directory
+    imv-msg "$pid" close all
+    for img in "${images[@]}"; do
+        imv-msg "$pid" open "$img"
+    done
+    imv-msg "$pid" goto "$index"
+else
+    imv -n "$index" "${images[@]}" &
+fi
