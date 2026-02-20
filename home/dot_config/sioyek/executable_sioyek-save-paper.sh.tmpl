@@ -6,13 +6,12 @@ set -euo pipefail
 ############################
 
 PAPERS_DIR="$HOME/physics/papers"
-ZOTERO_DB="$HOME/Zotero/zotero.sqlite"
-BIBLATEX_DB="$HOME/Zotero/better-bibtex.sqlite"
-LOG_FILE="$PAPERS_DIR/zread-unsorted.log"
+LOG_FILE="$HOME/physics/papers/zread-unsorted.log"
+BBT_RPC="http://127.0.0.1:23119/better-bibtex/json-rpc"
 
 mkdir -p "$PAPERS_DIR"
 
-# for non-interactive debugging 
+# for non-interactive debugging
 exec >>"$LOG_FILE" 2>&1
 log() { echo "[$(date '+%H:%M:%S')] $*"; }
 
@@ -37,8 +36,13 @@ if [[ ! -f "$PDF" ]]; then
     exit 1
 fi
 
-if [[ ! -f "$ZOTERO_DB" ]]; then
-    echo "ERROR: Zotero database not found at $ZOTERO_DB" >&2
+# Check that Zotero + BBT are running
+if ! curl -sf "$BBT_RPC" -X POST \
+    -H "Content-Type: application/json" \
+    -H "Accept: application/json" \
+    --data-binary '{"jsonrpc":"2.0","method":"api.ready","id":0}' \
+    >/dev/null 2>&1; then
+    echo "ERROR: Zotero/Better BibTeX not reachable at $BBT_RPC" >&2
     exit 1
 fi
 
@@ -48,87 +52,146 @@ fi
 
 TEXT="$(pdftotext "$PDF" - 2>/dev/null || true)"
 
+# Extract DOI and strip trailing punctuation that the greedy regex eats
 DOI="$(echo "$TEXT" | grep -Eio '10\.[0-9]{4,9}/[^[:space:]]+' | head -n1 || true)"
-ARXIV="$(echo "$TEXT" | grep -Eio 'arXiv:[0-9]{4}\.[0-9]{4,5}' | head -n1 || true)"
+DOI="$(echo "$DOI" | sed 's/[].,;:)"'"'"']*$//')"
+
+# Extract bare arXiv number (strip "arXiv:" prefix and version suffix)
+ARXIV_RAW="$(echo "$TEXT" | grep -Eio 'arXiv:[0-9]{4}\.[0-9]{4,5}(v[0-9]+)?' | head -n1 || true)"
+ARXIV_NUM="${ARXIV_RAW#arXiv:}"
+
+# Fallback: extract arXiv-like ID from the filename (YYMM.NNNNN pattern)
+STEM="${BASENAME%.pdf}"
+if [[ -z "$ARXIV_NUM" ]]; then
+    ARXIV_NUM="$(echo "$STEM" | grep -Eio '[0-9]{4}\.[0-9]{4,5}(v[0-9]+)?' | head -n1 || true)"
+fi
+
+# Version-stripped form for broader matching
+ARXIV_NUM_NOVER="$(echo "$ARXIV_NUM" | sed 's/v[0-9]*$//')"
+
+# If we have an arXiv number, construct the arXiv DOI for searching
+ARXIV_DOI=""
+if [[ -n "$ARXIV_NUM_NOVER" ]]; then
+    ARXIV_DOI="10.48550/arXiv.${ARXIV_NUM_NOVER}"
+fi
 
 ############################
-# STEP 2 — ZOTERO QUERY HELPERS
+# STEP 2 — BBT JSON-RPC HELPERS
 ############################
 
-BBT_DB_SNAPSHOT="/tmp/better-bibtex.$$\.sqlite"
-
-snapshot_db() {
-    local src="$1"
-    local dst="$2"
-
-    cp "$src" "$dst"
+bbt_rpc() {
+    # $1 = method, $2 = JSON params (raw JSON array)
+    local payload
+    payload=$(jq -nc --arg m "$1" --argjson p "$2" \
+        '{"jsonrpc":"2.0","method":$m,"params":$p,"id":1}')
+    curl -sf "$BBT_RPC" -X POST \
+        -H "Content-Type: application/json" \
+        -H "Accept: application/json" \
+        --data-binary "$payload"
 }
 
-snapshot_db "$BIBLATEX_DB" "$BBT_DB_SNAPSHOT"
-
-query_zotero() {
-    local pattern="$1"
-    sqlite3 "$ZOTERO_DB" <<EOF
-SELECT DISTINCT items.itemID
-FROM items
-JOIN itemData ON items.itemID = itemData.itemID
-JOIN itemDataValues ON itemData.valueID = itemDataValues.valueID
-WHERE itemDataValues.value LIKE '%$pattern%';
-EOF
+# Advanced search with Zotero field conditions (array of tuples)
+search_advanced() {
+    local conditions="$1"  # raw JSON array of tuples, e.g. [["DOI","is","..."]]
+    # Wrap conditions as first positional arg in the params array
+    bbt_rpc "item.search" "[$conditions]"
 }
 
-get_citation_key() {
-    local itemid="$1"
-    sqlite3 "$BBT_DB_SNAPSHOT" <<EOF
-SELECT citationkey FROM citationkey WHERE itemID = $itemid
-EOF
+# Quick search (title/creator/year/citekey — same as Zotero search bar)
+quick_search() {
+    local terms="$1"
+    bbt_rpc "item.search" "$(jq -nc --arg t "$terms" '[$t]')"
+}
+
+# Extract citation keys from a JSON-RPC result.
+# Tries multiple possible response shapes.
+extract_citekeys() {
+    local raw="$1"
+
+    # Try .result[].citationKey (standard BBT item serialization)
+    # Fall through alternatives: .citekey, .citation-key
+    local keys
+    keys="$(echo "$raw" | jq -r '
+        [.result // [] | .[] |
+            (.citationKey // .citekey // .["citation-key"] // null)
+        ] | map(select(. != null)) | .[]
+    ' 2>/dev/null || true)"
+
+    # Maybe .result is a flat {itemKey: citationKey} map
+    if [[ -z "$keys" ]]; then
+        keys="$(echo "$raw" | jq -r '
+            .result // {} | to_entries[] | .value // empty
+        ' 2>/dev/null || true)"
+    fi
+
+    echo "$keys"
 }
 
 ############################
 # STEP 3 — MATCH DECISION TREE
 ############################
 
-ITEM_IDS=""
+CITEKEYS=""
 
-if [[ -n "$DOI" ]]; then
-    ITEM_IDS="$(query_zotero "$DOI")"
+# 1a) Search by arXiv DOI (exact match — most reliable for arXiv papers)
+if [[ -z "$CITEKEYS" && -n "$ARXIV_DOI" ]]; then
+    log "Searching by arXiv DOI: $ARXIV_DOI"
+    RAW="$(search_advanced "[[\"DOI\",\"is\",\"$ARXIV_DOI\"]]")"
+    log "arXiv DOI raw response: $RAW"
+    CITEKEYS="$(extract_citekeys "$RAW")"
 fi
 
-if [[ -z "$ITEM_IDS" && -n "$ARXIV" ]]; then
-    ITEM_IDS="$(query_zotero "$ARXIV")"
+# 1b) Search by text-extracted DOI (exact match)
+if [[ -z "$CITEKEYS" && -n "$DOI" ]]; then
+    log "Searching by DOI: $DOI"
+    RAW="$(search_advanced "[[\"DOI\",\"is\",\"$DOI\"]]")"
+    log "DOI raw response: $RAW"
+    CITEKEYS="$(extract_citekeys "$RAW")"
 fi
 
-if [[ -z "$ITEM_IDS" ]]; then
-    STEM="${BASENAME%.pdf}"
-    ITEM_IDS="$(query_zotero "$STEM")"
+# 2) Search by arXiv number in Extra field (Zotero stores arXiv IDs there)
+if [[ -z "$CITEKEYS" && -n "$ARXIV_NUM_NOVER" ]]; then
+    log "Searching Extra field for arXiv: $ARXIV_NUM_NOVER"
+    RAW="$(search_advanced "[[\"extra\",\"contains\",\"$ARXIV_NUM_NOVER\"]]")"
+    log "arXiv/extra raw response: $RAW"
+    CITEKEYS="$(extract_citekeys "$RAW")"
+fi
+
+# 3) Search by arXiv number in URL field
+if [[ -z "$CITEKEYS" && -n "$ARXIV_NUM_NOVER" ]]; then
+    log "Searching URL field for arXiv: $ARXIV_NUM_NOVER"
+    RAW="$(search_advanced "[[\"url\",\"contains\",\"$ARXIV_NUM_NOVER\"]]")"
+    log "arXiv/url raw response: $RAW"
+    CITEKEYS="$(extract_citekeys "$RAW")"
+fi
+
+# 4) Fallback: quick search on filename stem
+if [[ -z "$CITEKEYS" ]]; then
+    log "Quick-searching filename stem: $STEM"
+    RAW="$(quick_search "$STEM")"
+    log "stem raw response: $RAW"
+    CITEKEYS="$(extract_citekeys "$RAW")"
 fi
 
 ############################
 # STEP 4 — HANDLE RESULTS
 ############################
 
-COUNT="$(echo "$ITEM_IDS" | sed '/^$/d' | wc -l | tr -d ' ')"
+COUNT="$(echo "$CITEKEYS" | sed '/^$/d' | wc -l | tr -d ' ')"
 
 if [[ "$COUNT" -eq 1 ]]; then
-    ITEM_ID="$(echo "$ITEM_IDS" | head -n1)"
-    CITEKEY="$(get_citation_key "$ITEM_ID")"
-
-    if [[ -z "$CITEKEY" ]]; then
-        echo "WARNING: Zotero item found but no citation key" >> "$LOG_FILE"
-        CITEKEY="UNSORTED-${BASENAME%.pdf}"
-    fi
+    CITEKEY="$(echo "$CITEKEYS" | head -n1)"
+    log "Matched citation key: $CITEKEY"
 
 elif [[ "$COUNT" -gt 1 ]]; then
-    echo "AMBIGUOUS: multiple Zotero matches for $BASENAME" >> "$LOG_FILE"
-    echo "$ITEM_IDS" >> "$LOG_FILE"
+    log "AMBIGUOUS: multiple Zotero matches for $BASENAME"
+    log "$CITEKEYS"
     CITEKEY="AMBIGUOUS-${BASENAME%.pdf}"
 
 else
-    echo "UNMATCHED: $BASENAME" >> "$LOG_FILE"
+    log "UNMATCHED: $BASENAME"
     CITEKEY="UNSORTED-${BASENAME%.pdf}"
 fi
-
-rm -f "$BBT_DB_SNAPSHOT"
 
 ############################
 # STEP 5 — FINALIZE
@@ -146,4 +209,4 @@ open -a sioyek "$NEW_PATH"
 sioyek "$NEW_PATH"
 {{ end -}}
 
-echo "Saved as: $NEW_PATH"
+log "Saved as: $NEW_PATH"
