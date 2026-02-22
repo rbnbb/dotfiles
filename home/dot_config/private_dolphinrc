@@ -1,0 +1,14 @@
+[General]
+OpenExternallyCalledFolderInNewTab=true
+Version=202
+ViewPropsTimestamp=2026,1,10,18,8,46.116
+
+[KFileDialog Settings]
+Places Icons Auto-resize=false
+Places Icons Static Size=22
+
+[PreviewSettings]
+Plugins=kraorathumbnail,cursorthumbnail,appimagethumbnail,imagethumbnail,jpegthumbnail,audiothumbnail,ebookthumbnail,svgthumbnail,directorythumbnail,windowsexethumbnail,exrthumbnail,opendocumentthumbnail,comicbookthumbnail,windowsimagethumbnail,djvuthumbnail,glycin-heif,glycin-jxl,glycin-svg,glycin-image-rs
+
+[UiSettings]
+ColorScheme=DankMatugen
