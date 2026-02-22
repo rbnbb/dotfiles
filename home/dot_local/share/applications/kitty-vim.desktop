@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Vim (Kitty)
+Comment=Edit text files in Vim via Kitty
+TryExec=kitty
+Exec=kitty vim %F
+StartupNotify=true
+Terminal=false
+Type=Application
+Icon=vim
+Categories=Utility;TextEditor;
+MimeType=text/plain;text/markdown;text/x-markdown;

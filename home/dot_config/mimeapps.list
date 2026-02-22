@@ -1,0 +1,12 @@
+[Added Associations]
+application/pdf=sioyek.desktop;
+image/png=imv-open.desktop;imv-open.desktop;
+
+[Default Applications]
+application/pdf=sioyek.desktop;
+image/png=imv-open.desktop;
+x-scheme-handler/terminal=kitty.desktop
+text/plain=kitty-vim.desktop
+text/markdown=kitty-vim.desktop
+text/x-markdown=kitty-vim.desktop
+application/x-shellscript=kitty-vim.desktop
