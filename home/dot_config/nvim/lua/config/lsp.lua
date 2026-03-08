@@ -11,8 +11,7 @@ local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 -- set quickfix list from diagnostics in a certain buffer, not the whole workspace
 local set_qflist = function(buf_num, severity)
-    local diagnostics = nil
-    diagnostics = diagnostic.get(buf_num, { severity = severity })
+    local diagnostics = diagnostic.get(buf_num, { severity = severity })
 
     local qf_items = diagnostic.toqflist(diagnostics)
     vim.fn.setqflist({}, ' ', { title = 'Diagnostics', items = qf_items })
@@ -124,24 +123,14 @@ end
 local ltex_attach = function(client, bufnr)
     vim.api.nvim_create_user_command("LtexLangChangeLanguage", function(data)
         local language = data.fargs[1]
-        -- local bufnr = vim.api.nvim_get_current_buf()
-        -- local client = vim.lsp.get_active_clients({ bufnr = bufnr, name = 'ltex' })
-        if #client == 0 then
+        if not client then
             vim.notify("No ltex client attached")
         else
-            client = client[1]
-            client.config.settings = {
-                ltex = {
-                    language = language
-                }
-            }
+            client.config.settings = { ltex = { language = language } }
             client.notify('workspace/didChangeConfiguration', client.config.settings)
             vim.notify("Language changed to " .. language)
         end
-    end, {
-    nargs = 1,
-    force = true,
-    })
+    end, { nargs = 1, force = true })
     require("ltex_extra").setup {
         init_check = true,
         load_langs = { "en-US" },
@@ -152,7 +141,7 @@ end
 
 
 if utils.executable("pylsp") then
-    local venv_path = os.getenv('VIRTUAL_ENV')
+    local venv_path = vim.fn.expand("$HOME/.virtualenvs/nvim")
     local py_path = nil
     -- decide which python executable to use for mypy
     if venv_path ~= nil then
@@ -208,7 +197,7 @@ end
 -- end
 
 if utils.executable("ltex-ls") then
-    local os_name = vim.loop.os_uname().sysname
+    local os_name = vim.uv.os_uname().sysname
     if os_name == 'Darwin' then
         vim.env.JAVA_HOME = "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
     end
@@ -370,13 +359,6 @@ diagnostic.config {
             [diagnostic.severity.HINT] = '',
             } },
 }
-
-lsp.handlers["textDocument/publishDiagnostics"] = lsp.with(lsp.diagnostic.on_publish_diagnostics, {
-  underline = false,
-  virtual_text = false,
-  signs = true,
-  update_in_insert = false,
-})
 
 -- Change border of documentation hover window, See https://github.com/neovim/neovim/pull/13998.
 lsp.handlers["textDocument/hover"] = lsp.with(vim.lsp.handlers.hover, {

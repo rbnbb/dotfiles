@@ -1,4 +1,4 @@
-local uname = vim.loop.os_uname()
+local uname = vim.uv.os_uname()
 
 local img_app = "exit"
 if uname.sysname == 'Darwin' then

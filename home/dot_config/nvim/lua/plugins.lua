@@ -9,6 +9,11 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+local nvim_venv = vim.fn.expand("~/.virtualenvs/nvim/bin")
+if vim.loop.fs_stat(nvim_venv) then
+    vim.env.PATH = nvim_venv .. ":" .. vim.env.PATH
+end
+
 -- python path for UltiSnips, etc.
 require("config.providers")
 
@@ -31,7 +36,6 @@ local plugin_specs = {
             "hrsh7th/cmp-emoji",
             "hrsh7th/cmp-nvim-lsp-signature-help",
             "quangnguyen30192/cmp-nvim-ultisnips",
-            "saadparwaiz1/cmp_luasnip",
         },
         config = function()
             require("config.nvim-cmp")
@@ -50,33 +54,27 @@ local plugin_specs = {
         build = ":TSUpdate",
         event = { "BufReadPost", "BufNewFile" },
         config = function()
+            local highlight_disabled = { "markdown", "help", "vimdoc", "tex" }
+            local indent_disabled = { "julia", "json" }
+
             require("nvim-treesitter").setup({
                 ensure_installed = { "vimdoc", "julia", "python", "cpp", "lua", "vim", "json", "toml" },
-                highlight = { enable = true, disable = { "markdown", "help", "vimdoc", "tex" } },
-                indent = {
-                    enable = true,
-                    disable = { "julia", "json" },
-                },
             })
-
-            -- Filetypes to disable highlighting
-            local highlight_disabled = { "markdown", "help", "vimdoc", "tex" }
-            -- Filetypes to disable indentation
-            local indent_disabled = { "julia", "json" }
 
             vim.api.nvim_create_autocmd("FileType", {
                 callback = function(ev)
                     local buf = ev.buf
                     local ft = vim.bo[buf].filetype
 
-                    -- Try to start treesitter highlighting
-                    local ok = pcall(vim.treesitter.start, buf)
-                    if not ok then return end
+                    -- Skip filetypes where we don't want treesitter highlighting
+                    if vim.tbl_contains(highlight_disabled, ft) then return end
 
-                    -- Disable highlighting for specific filetypes
-                    if vim.tbl_contains(highlight_disabled, ft) then
-                        vim.treesitter.stop(buf)
-                    end
+                    -- Skip if no parser is available for this filetype
+                    local lang = vim.treesitter.language.get_lang(ft) or ft
+                    if not pcall(vim.treesitter.language.add, lang) then return end
+
+                    -- pcall to handle edge cases (e.g. TelescopePrompt)
+                    if not pcall(vim.treesitter.start, buf, lang) then return end
 
                     -- Enable treesitter indentation (unless disabled)
                     if not vim.tbl_contains(indent_disabled, ft) then
@@ -151,10 +149,8 @@ local plugin_specs = {
         event = 'VimEnter',
         -- cond = firenvim_not_active,
         config = function()
-            require("dashboard").setup {
-                theme = "hyper",
-                vim.keymap.set('n', '<leader>d', ':Dashboard<CR>')
-            }
+            require("dashboard").setup { theme = "hyper" }
+            vim.keymap.set('n', '<leader>d', ':Dashboard<CR>')
         end,
         -- requires = {'nvim-tree/nvim-web-devicons'},
     },
@@ -454,10 +450,8 @@ local lazy_opts = {
         title = "Plugin Manager",
         title_pos = "center",
     },
-    {
-        rocks = {
-            enabled = false,
-        },
+    rocks = {
+        enabled = false,
     },
 }
 

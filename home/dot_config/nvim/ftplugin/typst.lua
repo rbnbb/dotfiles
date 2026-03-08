@@ -2,7 +2,7 @@
 -- keep both for when typst preview give no output
 -- use ,ll to start compiling file and launch os viewer
 local map = vim.keymap.set
-local uname = vim.loop.os_uname()
+local uname = vim.uv.os_uname()
 local pdf_app = "exit"
 if uname.sysname == 'Darwin' then
     pdf_app = "open -a sioyek"  -- Skim.app"  -- old app

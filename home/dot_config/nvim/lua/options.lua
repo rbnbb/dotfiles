@@ -30,7 +30,7 @@ local options = {
     signcolumn = "yes",
     scrolloff = 0,
     sidescrolloff = 3,
-    colorcolumn = tostring(0),
+    colorcolumn = "",
     laststatus = 3,
     fillchars = {
         eob = " ",
@@ -97,12 +97,13 @@ local options = {
     spell = true,
     spelllang = "en_us,fr",
     spellsuggest = "9",
-    whichwrap = vim.opt.whichwrap:append("<,>,[,],h,l"),
-    shortmess = vim.opt.shortmess:append("c"),
-    iskeyword = vim.opt.iskeyword:append("-"),
     -- langmap = langmap,
     -- smooth scroll = true,
 }
+
+vim.opt.whichwrap:append("<,>,[,],h,l")
+vim.opt.shortmess:append("c")
+vim.opt.iskeyword:append("-")
 
 for option_name, value in pairs(options) do
     -- To avoid errors on toggle nvim version
@@ -136,23 +137,20 @@ end
 -- })
 
 -- exclude quickfix from bf, bn
-vim.cmd([[
-augroup qf
-    autocmd!
-    autocmd FileType qf set nobuflisted
-augroup END
-]])
+vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("qf", { clear = true }),
+    pattern = "qf",
+    callback = function() vim.bo.buflisted = false end,
+})
 
 -- remember_folds
-vim.cmd [[
-augroup remember_folds
-  autocmd!
-  autocmd BufWinLeave *.* mkview
-  autocmd BufWinEnter *.* silent! loadview
-augroup END
-]]
+local folds_group = vim.api.nvim_create_augroup("remember_folds", { clear = true })
+vim.api.nvim_create_autocmd("BufWinLeave", {
+    group = folds_group, pattern = "*.*", command = "mkview",
+})
+vim.api.nvim_create_autocmd("BufWinEnter", {
+    group = folds_group, pattern = "*.*", command = "silent! loadview",
+})
 
-vim.cmd [[
-set viewoptions-=curdir
-set viewoptions-=options
-]]
+vim.opt.viewoptions:remove("curdir")
+vim.opt.viewoptions:remove("options")
