@@ -8,13 +8,14 @@
 .config/imv
 .config/dolphinrc
 .config/mimeapps.list
-.autojump
 .local/bin/imv-open
-.local/share/applications/imv-open.desktop
-.local/share/applications/kitty-vim.desktop
-.local/share/applications/sioyek.desktop
+.local/share/applications
 {{ else }}
 .config/kitty/themes
+{{ end }}
+
+{{ if (ne .chezmoi.os "linux") }}
+.autojump
 {{ end }}
 
 {{ if not .personal }}
