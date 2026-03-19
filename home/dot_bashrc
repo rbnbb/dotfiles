@@ -1,4 +1,10 @@
-# execute zsh, if I installed it (4 headless remotes)
-if [ -t 1 ] && [ -d "$HOME/bin" ]; then
-    exec ~/bin/zsh
+# If zsh is already the login shell (via chsh), don't intervene
+if [ "${SHELL##*/}" = "zsh" ]; then
+    return 0 2>/dev/null || true
+fi
+
+# No chsh or zsh not set as login shell — exec local zsh if interactive
+if [ -t 1 ] && [ -x "$HOME/bin/zsh" ]; then
+    export SHELL="$HOME/bin/zsh"
+    exec "$HOME/bin/zsh" -l
 fi
