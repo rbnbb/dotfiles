@@ -16,13 +16,13 @@ fi
 if command -v autojump &> /dev/null; then
     echo "✓ autojump is already installed"
 else
+
     echo "autojump-rs is not installed (fast directory jumping in Rust)."
     read -p "Install autojump-rs? [Y/n]: " choice
     choice=${choice:-Y}
 
     if [[ "$choice" =~ ^[Yy]$ ]]; then
         if command -v pacman &> /dev/null; then
-            # AUR: autojump-rs
             if command -v yay &> /dev/null; then
                 yay -S --noconfirm autojump-rs || echo "⚠ autojump-rs install failed"
             elif command -v paru &> /dev/null; then
@@ -30,15 +30,36 @@ else
             else
                 echo "⚠ Need yay/paru for AUR. Install manually: https://github.com/xen0n/autojump-rs"
             fi
+        elif command -v curl &> /dev/null; then
+            echo "Fetching autojump-rs binary from GitHub..."
+            REPO="https://github.com/xen0n/autojump-rs/releases/latest/download"
+{{ if eq .chezmoi.os "darwin" }}
+{{   if eq .chezmoi.arch "arm64" }}
+            URL="${REPO}/autojump-aarch64-apple-darwin.tar.gz"
+{{   else }}
+            URL="${REPO}/autojump-x86_64-apple-darwin.tar.gz"
+{{   end }}
+{{ else if eq .chezmoi.os "linux" }}
+{{   if eq .chezmoi.arch "arm64" }}
+            URL="${REPO}/autojump-aarch64-unknown-linux-musl.tar.gz"
+{{   else }}
+            URL="${REPO}/autojump-x86_64-unknown-linux-musl.tar.gz"
+{{   end }}
+{{ end }}
+            mkdir -p ~/.local/bin
+            if curl -fL "$URL" | tar -xz -C ~/.local/bin; then
+                echo "✓ autojump installed to ~/.local/bin"
+            else
+                echo "⚠ GitHub binary download failed"
+            fi
         elif command -v cargo &> /dev/null; then
             cargo install autojump-rs || echo "⚠ cargo install failed"
         elif command -v brew &> /dev/null; then
-            # Fallback to original on macOS (autojump-rs not in homebrew)
             echo "autojump-rs not in homebrew, installing original autojump..."
             brew install autojump || echo "⚠ autojump install failed"
         else
-            echo "⚠ Need cargo or AUR helper to install autojump-rs."
-            echo "  Install cargo first, or get binary from: https://github.com/xen0n/autojump-rs"
+            echo "⚠ No install method available (need curl, cargo, or AUR helper)."
+            echo "  Get binary from: https://github.com/xen0n/autojump-rs"
         fi
     fi
 fi
