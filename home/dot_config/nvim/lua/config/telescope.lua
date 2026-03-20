@@ -8,6 +8,10 @@ vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
 
 require('telescope').setup{
     defaults = {
+        file_ignore_patterns = {
+            "%.png",
+            "%.pdf",
+        },
         mappings = {
             i = {
                 ["<A-q>"] = function(prompt_bufnr)
