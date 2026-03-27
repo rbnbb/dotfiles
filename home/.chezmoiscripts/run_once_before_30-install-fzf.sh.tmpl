@@ -38,13 +38,34 @@ install_with_pkg_manager() {
     fi
 }
 
-install_from_git() {
-    echo "Installing fzf from git..."
-    if git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf; then
-        ~/.fzf/install --key-bindings --completion --no-update-rc --no-bash --no-fish
-        echo "✓ fzf installed to ~/.fzf"
+install_from_release() {
+    echo "Fetching latest fzf release..."
+    local version
+    version=$(curl -sI https://github.com/junegunn/fzf/releases/latest | grep -i ^location | sed 's|.*/v||' | tr -d '\r\n')
+
+    if [ -z "$version" ]; then
+        echo "⚠ Could not determine latest fzf version"
+        return 1
+    fi
+
+    local url="https://github.com/junegunn/fzf/releases/download/v${version}/fzf-${version}-linux_amd64.tar.gz"
+    local dest="$HOME/bin"
+
+    mkdir -p "$dest"
+    echo "Downloading fzf v${version} (linux_amd64)..."
+
+    if curl -fL "$url" | tar -xz -C "$dest"; then
+        chmod +x "$dest/fzf"
+        echo "✓ fzf v${version} installed to $dest/fzf"
+
+        # Remind about PATH if ~/bin isn't in it
+        if ! echo "$PATH" | tr ':' '\n' | grep -qx "$dest"; then
+            echo ""
+            echo "⚠ $dest is not in your PATH. Add this to your shell rc:"
+            echo "  export PATH=\"\$HOME/bin:\$PATH\""
+        fi
     else
-        echo "⚠ Failed to clone fzf"
+        echo "⚠ Failed to download fzf"
         return 1
     fi
 }
@@ -52,7 +73,7 @@ install_from_git() {
 echo ""
 echo "How would you like to install fzf?"
 echo "  1) Use system package manager (requires sudo unless root)"
-echo "  2) Install from git to ~/.fzf (no sudo needed)"
+echo "  2) Download binary to ~/bin (no sudo needed)"
 echo "  3) Skip installation"
 echo ""
 read -p "Choose [1/2/3]: " choice
@@ -66,7 +87,7 @@ case "$choice" in
         fi
         ;;
     2)
-        install_from_git || echo "⚠ Git install failed. You can install manually later."
+        install_from_release || echo "⚠ Release download failed. You can install manually later."
         ;;
     3|*)
         echo "Skipping fzf installation"
