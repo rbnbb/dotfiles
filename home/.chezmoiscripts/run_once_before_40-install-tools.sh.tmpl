@@ -65,6 +65,7 @@ else
 fi
 echo ""
 
+{{ if .useEncryption -}}
 #==== Vim ====#
 if command -v vim &> /dev/null; then
     echo "✓ vim is already installed"
@@ -170,6 +171,7 @@ else
         fi
     fi
 fi
+{{ end -}}
 {{ end -}}
 
 echo ""

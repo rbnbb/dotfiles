@@ -1,5 +1,9 @@
 #!/bin/bash
 # Decrypt the age identity key
+{{ if not .useEncryption -}}
+echo "Skipping age key decryption (useEncryption=false, minimal install)"
+exit 0
+{{ else -}}
 
 KEY_FILE="${HOME}/.config/chezmoi/key.txt"
 ENCRYPTED_KEY="{{ .chezmoi.sourceDir }}/key.txt.age"
@@ -33,3 +37,4 @@ else
 fi
 
 exit 0
+{{ end -}}

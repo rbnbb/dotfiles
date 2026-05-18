@@ -1,19 +1,22 @@
-encryption = "age"
-[age]
-    identity = "~/.config/chezmoi/key.txt"
-    recipient = "age1mlgdrz3hha2lw9xjz8mxnj5p0jv7s7x0pfz787sxcwsnhycvwczscgynd3"
-
 {{ $personal := promptBoolOnce . "personal" "Is this machine personal?" -}}
 {{ $headless := promptBoolOnce . "headless" "Is this machine headless (no display)?" -}}
+{{ $useEncryption := promptBoolOnce . "useEncryption" "Use age encryption? (N for minimal install: no passphrase, skips ssh keys / private zshrc / nvim)" -}}
 
 {{- $pager := "less" -}}
 {{- if $personal -}}
 {{- $pager = "delta" -}}
 {{- end -}}
 
+{{ if $useEncryption -}}
+encryption = "age"
+[age]
+    identity = "~/.config/chezmoi/key.txt"
+    recipient = "age1mlgdrz3hha2lw9xjz8mxnj5p0jv7s7x0pfz787sxcwsnhycvwczscgynd3"
+{{ end }}
 [data]
     headless = {{ $headless }}
     personal = {{ $personal }}
+    useEncryption = {{ $useEncryption }}
 
 [edit]
     command = "vim"

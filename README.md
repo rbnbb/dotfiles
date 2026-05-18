@@ -11,8 +11,28 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply rbnbb/dotfiles
 
 You'll be prompted for:
 - Machine type (personal/headless)
-- Age encryption passphrase (for SSH keys and private configs)
+- Whether to use age encryption (answer **N** for a minimal, no-passphrase install — see below)
+- Age passphrase (only if you answered Y above; needed for SSH keys and private configs)
 - Tool installations (zsh, oh-my-zsh, fzf, etc.)
+
+## Minimal install (no passphrase)
+
+For a fresh box / ephemeral container where you just want a nice shell and don't have the age passphrase, answer **N** to the encryption prompt. This:
+
+- skips age key decryption entirely (no passphrase asked)
+- chezmoiignores all encrypted files (`.zshrc.private`, `.ssh/config`, ssh keys)
+- skips overwriting `.bashrc`, `.gitconfig`, `.config/nvim`
+- installs only zsh + oh-my-zsh + powerlevel10k + fzf + autojump-rs
+
+Try it in a throwaway Docker container:
+
+```bash
+docker run --rm -it archlinux bash -c '
+  pacman -Sy --noconfirm git curl sudo &&
+  sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply rbnbb/dotfiles
+'
+# Answer: personal=n, headless=y, useEncryption=n
+```
 
 ## What's Included
 

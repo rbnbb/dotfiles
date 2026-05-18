@@ -3,7 +3,7 @@
 .config/aerospace
 {{ end }}
 
-{{ if (or (ne .chezmoi.os "linux") (.headless)) }}
+{{ if (or (ne .chezmoi.os "linux") (.headless) (not .useEncryption)) }}
 .config/hypr
 .config/imv
 .config/dolphinrc
@@ -33,6 +33,18 @@
 .kitty
 .gitignore_global
 .local/bin/wallpaper-switcher
+{{ end }}
+
+{{ if not .useEncryption }}
+.zshrc.private
+.ssh/config
+.ssh/id_ed25519
+.ssh/id_ed25519_2
+.ssh/id_ed25519_42
+.ssh/id_rsa
+.bashrc
+.gitconfig
+.config/nvim
 {{ end }}
 
 key.txt.age
