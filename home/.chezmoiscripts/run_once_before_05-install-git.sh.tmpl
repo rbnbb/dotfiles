@@ -1,0 +1,57 @@
+#!/bin/bash
+# Ensure git is installed. chezmoi itself uses embedded git for `init`,
+# but later scripts (oh-my-zsh, powerlevel10k) need a system git for clone.
+
+if command -v git &> /dev/null; then
+    echo "✓ git is already installed"
+    exit 0
+fi
+
+echo "git is not installed."
+
+SUDO=""
+if [ "$(id -u)" -ne 0 ]; then
+    if command -v sudo &> /dev/null; then
+        SUDO="sudo"
+    fi
+fi
+
+install_with_pkg_manager() {
+    if command -v apt-get &> /dev/null; then
+        $SUDO apt-get update && $SUDO apt-get install -y git
+    elif command -v dnf &> /dev/null; then
+        $SUDO dnf install -y git
+    elif command -v pacman &> /dev/null; then
+        $SUDO pacman -Sy --noconfirm git
+    elif command -v brew &> /dev/null; then
+        brew install git
+    elif command -v zypper &> /dev/null; then
+        $SUDO zypper install -y git
+    elif command -v apk &> /dev/null; then
+        $SUDO apk add git
+    else
+        return 1
+    fi
+}
+
+echo ""
+echo "How would you like to install git?"
+echo "  1) Use system package manager (requires sudo unless root)"
+echo "  2) Skip (oh-my-zsh + powerlevel10k will be skipped too)"
+echo ""
+read -p "Choose [1/2]: " choice
+
+case "$choice" in
+    1)
+        if install_with_pkg_manager; then
+            echo "✓ git installed via package manager"
+        else
+            echo "⚠ Package manager install failed. Subsequent scripts that need git will skip."
+        fi
+        ;;
+    2|*)
+        echo "Skipping git installation. oh-my-zsh and powerlevel10k will be skipped."
+        ;;
+esac
+
+exit 0
