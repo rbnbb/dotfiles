@@ -7,12 +7,11 @@
 {{- $pager = "delta" -}}
 {{- end -}}
 
-{{ if $useEncryption -}}
 encryption = "age"
 [age]
     identity = "~/.config/chezmoi/key.txt"
     recipient = "age1mlgdrz3hha2lw9xjz8mxnj5p0jv7s7x0pfz787sxcwsnhycvwczscgynd3"
-{{ end }}
+
 [data]
     headless = {{ $headless }}
     personal = {{ $personal }}
