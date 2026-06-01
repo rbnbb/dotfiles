@@ -47,6 +47,9 @@ alias ce='chezmoi edit' css='chezmoi status' ca='chezmoi apply' cra='chezmoi re-
 {{- if .personal }}
 alias pdfcompress="gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile=output.pdf"
 {{- end }}
+abbrev() {
+  sed -E "s|$PWD/|./|g; s|$PWD\b|.|g; s|$HOME|~|g"
+}
 
 #==== Tools ====#
 [ -x "$(which fzf)" ] && source <(fzf --zsh)
