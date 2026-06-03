@@ -40,6 +40,16 @@ fi
 
 setopt EXTENDED_GLOB
 
+#==== TERMINAL TITLE (ssh-aware) ====#
+function set_title() {
+  if [[ -n "$SSH_CONNECTION" ]]; then
+    print -Pn "\e]2;${USER}@${HOST%%-glogin*}: %~\a"   # strip -glogin and anything after
+  else
+    print -Pn "\e]2;%~\a"
+  fi
+}
+precmd_functions+=(set_title)
+
 #==== ALIASES ====#
 alias juliap='julia --project=.'
 alias df='df -h' du='du -h'
