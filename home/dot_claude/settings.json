@@ -1,10 +1,46 @@
 {
-  "feedbackSurveyState": {
-    "lastShownTime": 1753952813314
-  },
-  "alwaysThinkingEnabled": true,
+  "model": "claude-opus-4-8",
   "statusLine": {
     "type": "command",
     "command": "bash -c 'input=$(cat); cwd=$(echo \"$input\" | jq -r \".workspace.current_dir\"); short_path=$(echo \"$cwd\" | sed \"s|^$HOME|~|\"); git_branch=\"\"; if git -C \"$cwd\" rev-parse --git-dir >/dev/null 2>&1; then branch=$(git -C \"$cwd\" branch --show-current 2>/dev/null); [ -n \"$branch\" ] && git_branch=\" [$branch]\"; fi; model=$(echo \"$input\" | jq -r \".model.display_name\" | sed \"s/Claude //\" | sed \"s/3\\.5/4.5/\"); context=$(echo \"$input\" | jq \".context_window\"); current_usage=$(echo \"$context\" | jq \".current_usage\"); if [ \"$current_usage\" != \"null\" ]; then current_total=$(($(echo \"$current_usage\" | jq \".input_tokens + .cache_creation_input_tokens + .cache_read_input_tokens\"))); window_size=$(echo \"$context\" | jq \".context_window_size\"); current_k=$((current_total / 1000)); window_k=$((window_size / 1000)); token_info=\" | ${current_k}k/${window_k}k tokens\"; else token_info=\"\"; fi; printf \"%s%s | %s%s\" \"$short_path\" \"$git_branch\" \"$model\" \"$token_info\"'"
+  },
+  "extraKnownMarketplaces": {
+    "claude-code-lsps": {
+      "source": {
+        "source": "github",
+        "repo": "Piebald-AI/claude-code-lsps"
+      }
+    }
+  },
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "xhigh",
+  "agentPushNotifEnabled": true,
+  "feedbackSurveyState": {
+    "lastShownTime": 1753952813314
+  },
+  "enabledPlugins": {
+    "julia-lsp@claude-code-lsps": true
+  },
+  "permissions": {
+    "deny": [
+      "Edit(~/data/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "~/.claude/hooks/protect-data-dir.sh" }
+        ]
+      }
+    ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "allowUnsandboxedCommands": false,
+    "filesystem": {
+      "denyWrite": ["~/data"]
+    }
   }
 }
