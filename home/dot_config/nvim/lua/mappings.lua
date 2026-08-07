@@ -26,7 +26,7 @@ map("n", "\\ch", ":set colorcolumn=<CR>")
 
 
 map("n", "<leader>q", ":bp<bar>sp<bar>bn<bar>bd<CR>")
-map("n", "<leader><leader>", ":nohlsearch<Bar>:echo<CR>")
+map("n", "<leader><leader>", ":UfoRebirth<CR>:nohlsearch<Bar>:echo<CR>")
 map("n", "<leader>p", "\"+p")
 map("v", "<leader>y", "\"+y")
 

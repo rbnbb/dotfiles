@@ -21,3 +21,28 @@ endsnippet
 snippet \pi "π" iA
 π
 endsnippet
+
+snippet rrel "Related" A
+**Related**: [[$1]],
+endsnippet
+
+snippet __ "subscript" iA
+_{$1}$0
+endsnippet
+
+snippet ^^ "exponent par expansion {}" iA
+^{$1}$0
+endsnippet
+
+snippet dag "dagger" iA
+^\dagger $0
+endsnippet
+
+snippet mk "Math" wA
+$${1:${VISUAL}}$`!p
+if t[2] and t[2][0] not in [',', '.', '?', '-', ' ']:
+        snip.rv = ' '
+else:
+        snip.rv = ''
+`$2
+endsnippet

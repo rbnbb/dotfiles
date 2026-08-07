@@ -1,6 +1,5 @@
 vim.bo.cindent = false
 vim.bo.smartindent = false
-vim.bo.indentexpr = ''
 
 -- Force treesitter to parse entire buffer for proper folding
 vim.defer_fn(function()

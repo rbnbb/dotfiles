@@ -422,8 +422,17 @@ local plugin_specs = {
         config = function()
             require('kitty-scrollback').setup()
             -- Set custom mappings using space explicitly
+            -- vim.keymap.set('n', ',y', function()
+            --   local line = vim.api.nvim_get_current_line()
+            --   -- Remove leading number + spaces (adjust pattern if needed)
+            --   local cleaned = line:gsub("^%s*%S+%s+", "")
+            --   -- Put into register
+            --   vim.fn.setreg('"', cleaned)
+            --   -- Call kitty-scrollback yank
+            --   vim.cmd('normal! ' .. vim.api.nvim_replace_termcodes('<Plug>(KsbNormalYank)', true, false, true))
+            -- end, { desc = 'Yank line without prefix number' })
             vim.keymap.set('n', '<Space>y', '<Plug>(KsbNormalYank)', { desc = 'Yank to clipboard' })
-            vim.keymap.set('n', '<Space>yy', '<Plug>(KsbNormalYankLine)', { desc = 'Yank line to clipboard' })
+            -- vim.keymap.set('n', '<Space>yy', '<Plug>(KsbNormalYankLine)', { desc = 'Yank line to clipboard' })
             vim.keymap.set('n', '<Space>Y', '<Plug>(KsbNormalYankEnd)', { desc = 'Yank to end of line to clipboard' })
             vim.keymap.set('v', '<Space>y', '<Plug>(KsbVisualYank)', { desc = 'Yank selection to clipboard' })
             vim.keymap.set('v', '<Space>Y', '<Plug>(KsbVisualYankLine)', { desc = 'Yank lines to clipboard' })
