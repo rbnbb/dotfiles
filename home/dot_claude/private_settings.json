@@ -1,0 +1,94 @@
+{
+  "permissions": {
+    "deny": [
+      "Edit(~/data/**)"
+    ]
+  },
+  "model": "opus",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/protect-data-dir.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/opt/homebrew/Cellar/node/25.2.1/bin/node\" \"/Users/memyself/.claude/hooks/caveman-activate.js\"",
+            "timeout": 5,
+            "statusMessage": "Loading caveman mode..."
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/opt/homebrew/Cellar/node/25.2.1/bin/node\" \"/Users/memyself/.claude/hooks/caveman-mode-tracker.js\"",
+            "timeout": 5,
+            "statusMessage": "Tracking caveman mode..."
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash -c 'input=$(cat); cwd=$(echo \"$input\" | jq -r \".workspace.current_dir\"); short_path=$(echo \"$cwd\" | sed \"s|^$HOME|~|\"); git_branch=\"\"; if git -C \"$cwd\" rev-parse --git-dir >/dev/null 2>&1; then branch=$(git -C \"$cwd\" branch --show-current 2>/dev/null); [ -n \"$branch\" ] && git_branch=\" [$branch]\"; fi; model=$(echo \"$input\" | jq -r \".model.display_name\" | sed \"s/Claude //\" | sed \"s/3\\.5/4.5/\"); context=$(echo \"$input\" | jq \".context_window\"); current_usage=$(echo \"$context\" | jq \".current_usage\"); if [ \"$current_usage\" != \"null\" ]; then current_total=$(($(echo \"$current_usage\" | jq \".input_tokens + .cache_creation_input_tokens + .cache_read_input_tokens\"))); window_size=$(echo \"$context\" | jq \".context_window_size\"); current_k=$((current_total / 1000)); window_k=$((window_size / 1000)); token_info=\" | ${current_k}k/${window_k}k tokens\"; else token_info=\"\"; fi; badge=$(bash \"$HOME/.claude/hooks/caveman-statusline.sh\"); ponytail=$(bash \"$HOME/.claude/plugins/marketplaces/ponytail/hooks/ponytail-statusline.sh\"); printf \"%s%s | %s%s | %s | %s\" \"$short_path\" \"$git_branch\" \"$model\" \"$token_info\" \"$badge\" \"$ponytail\"'"
+  },
+  "enabledPlugins": {
+    "julia-lsp@claude-code-lsps": true,
+    "caveman@caveman": true,
+    "frontend-design@claude-plugins-official": true,
+    "ponytail@ponytail": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-code-lsps": {
+      "source": {
+        "source": "github",
+        "repo": "Piebald-AI/claude-code-lsps"
+      }
+    },
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    }
+  },
+  "sandbox": {
+    "enabled": true,
+    "allowUnsandboxedCommands": true,
+    "filesystem": {
+      "allowWrite": [
+        "~/.julia",
+        "/tmp"
+      ],
+      "denyWrite": [
+        "~/data"
+      ]
+    }
+  },
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "low",
+  "agentPushNotifEnabled": true,
+  "feedbackSurveyState": {
+    "lastShownTime": 1753952813314
+  }
+}
