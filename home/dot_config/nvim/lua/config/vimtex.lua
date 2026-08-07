@@ -17,9 +17,11 @@ vim.g.vimtex_compiler_latexmk = {
 
 local os_name = vim.uv.os_uname().sysname
 if os_name == 'Linux' then
-    vim.g.vimtex_view_general_viewer = 'okular'
-    vim.g.vimtex_view_general_options = [[--unique file:@pdf\#src:@line@tex]]
-    vim.g.vimtex_view_mupdf_options = '@pdf'
+    vim.g.vimtex_view_general_viewer = 'sioyek'
+    -- OLD OKULAR OPTION
+    -- vim.g.vimtex_view_general_options = [[--unique file:@pdf\#src:@line@tex]]
+    -- vim.g.vimtex_view_mupdf_options = '@pdf'
 elseif os_name == 'Darwin' then
     vim.g.vimtex_view_method = 'sioyek'
+    vim.g.vimtex_view_general_viewer = 'sioyek'
 end
