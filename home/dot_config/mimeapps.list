@@ -10,3 +10,4 @@ text/plain=kitty-vim.desktop
 text/markdown=kitty-vim.desktop
 text/x-markdown=kitty-vim.desktop
 application/x-shellscript=kitty-vim.desktop
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop

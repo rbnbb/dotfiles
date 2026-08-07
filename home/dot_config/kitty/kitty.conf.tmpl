@@ -100,7 +100,7 @@ map ctrl+alt+cmd+b send_text all \x1bb
 map ctrl+alt+cmd+d send_text all \x1bd
 {{- end }}
 
-{{ if eq .chezmoi.hostname "jssc" -}}
+{{ if contains "arch" .chezmoi.kernel.osrelease -}}
 # Dank color generation
 include dank-theme.conf
 {{- else -}}
