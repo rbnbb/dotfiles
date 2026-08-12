@@ -3,7 +3,9 @@
 .config/aerospace
 {{ end }}
 
-{{ if (or (ne .chezmoi.os "linux") (.headless) (not .useEncryption)) }}
+{{- $isArch := and (eq .chezmoi.os "linux") (eq .chezmoi.osRelease.id "arch") -}}
+
+{{ if (or  (.headless) (not $isArch)) }}
 .config/hypr
 .config/imv
 .config/dolphinrc
