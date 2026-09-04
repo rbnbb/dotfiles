@@ -100,6 +100,13 @@ end, {
     desc = "reload init.lua",
 })
 
+
+-- Start static viewer
+vim.keymap.set("n", "<leader>qz", function()
+  vim.fn.jobstart({ "qz", vim.fn.expand("~/wiki") }, { detach = true })
+  vim.ui.open("http://localhost:8080")
+end)
+
 -- Reselect the text that has just been pasted, see also https://stackoverflow.com/a/4317090/6064933.
 map("n", "<leader>v", "printf('`[%s`]', getregtype()[0])", {
     expr = true,

@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# ~/.local/bin/qz — serve a directory with Quartz
+set -euo pipefail
+
+quartz_dir="${QUARTZ_HOME:-$HOME/tools/quartz}"
+[ -d "$quartz_dir" ] || { echo "qz: no quartz at $quartz_dir" >&2; exit 1; }
+
+# First arg is the content dir only when it doesn't start with a dash.
+if [ $# -gt 0 ] && [ "${1#-}" = "$1" ]; then
+  dir="$1"; shift
+else
+  dir="$PWD"
+fi
+
+dir="$(realpath -e "$dir")"
+[ -d "$dir" ] || { echo "qz: not a directory: $dir" >&2; exit 1; }
+
+# Flatten the full path so ~/a/notes and ~/b/notes don't share an output dir.
+slug="${dir#"$HOME"/}"; slug="${slug//\//_}"
+out="${XDG_CACHE_HOME:-$HOME/.cache}/quartz/${slug:-root}"
+
+# True if $1 appears in the remaining args, as --flag or --flag=value.
+has_flag() {
+  local needle="$1"; shift
+  local a
+  for a in "$@"; do
+    [ "$a" = "$needle" ] && return 0
+    case "$a" in "$needle"=*) return 0 ;; esac
+  done
+  return 1
+}
+
+# bash's /dev/tcp: connection succeeds => something is listening => taken.
+port_free() { ! (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null; }
+
+find_port() {
+  local p="$1"
+  while ! port_free "$p"; do p=$((p + 1)); done
+  printf '%s' "$p"
+}
+
+auto=()
+has_flag --port   "$@" || auto+=(--port   "$(find_port 8080)")
+has_flag --wsPort "$@" || auto+=(--wsPort "$(find_port 3001)")
+
+cd "$quartz_dir"
+exec npx quartz build -d "$dir" -o "$out" --serve "${auto[@]}" "$@"
