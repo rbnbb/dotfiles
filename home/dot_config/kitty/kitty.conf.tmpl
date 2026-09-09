@@ -98,9 +98,10 @@ macos_quit_when_last_window_closed no
 map ctrl+alt+cmd+f send_text all \x1bf
 map ctrl+alt+cmd+b send_text all \x1bb
 map ctrl+alt+cmd+d send_text all \x1bd
-{{- end }}
 
-{{ if contains "arch" .chezmoi.kernel.osrelease -}}
+# Catppuccin-Frappe
+include themes/frappe.conf
+{{ else if and (hasKey .chezmoi.kernel "osRelease") (eq .chezmoi.kernel.osRelease.id "arch") -}}
 # Dank color generation
 include dank-theme.conf
 {{- else -}}
