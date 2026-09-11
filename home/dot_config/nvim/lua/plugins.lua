@@ -329,11 +329,11 @@ local plugin_specs = {
     {
         "iamcco/markdown-preview.nvim",
         cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-        build = "cd app && yarn install",
+        ft = { "markdown" },
+        build = function() vim.fn["mkdp#util#install"]() end,
         init = function()
             vim.g.mkdp_filetypes = { "markdown" }
         end,
-        ft = { "markdown" },
     },
     --     -- Edit text area in browser using nvim
     --     {
